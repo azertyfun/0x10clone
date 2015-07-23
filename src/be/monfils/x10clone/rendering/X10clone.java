@@ -108,7 +108,7 @@ public class X10clone extends SimpleApplication {
 		initKeys();
 
 		try {
-			byte[] testRam_b = Files.readAllBytes(Paths.get("assets/DCPU/FrOSt.bin"));
+			byte[] testRam_b = Files.readAllBytes(Paths.get("assets/DCPU/palettetest.bin"));
 			char testRam[] = new char[0x10000];
 			for(int i = 0; i < 0x10000; ++i) {
 				testRam[i] = (char) (testRam_b[i * 2] << 8);

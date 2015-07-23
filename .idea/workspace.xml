@@ -26,7 +26,7 @@
         <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/rendering/X10clone.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="110" column="80" selection-start-line="110" selection-start-column="80" selection-end-line="110" selection-end-column="80" />
+              <caret line="63" column="0" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -34,11 +34,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DCPUManager.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="DCPUManager.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/DCPUManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.75570035">
-              <caret line="80" column="0" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="49" column="24" selection-start-line="49" selection-start-column="24" selection-end-line="49" selection-end-column="24" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -69,26 +69,32 @@
         <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/DCPU.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="80" column="30" selection-start-line="80" selection-start-column="30" selection-end-line="80" selection-end-column="30" />
+              <caret line="571" column="0" selection-start-line="571" selection-start-column="0" selection-end-line="571" selection-end-column="0" />
               <folding>
-                <element signature="e#0#12738#0" expanded="true" />
+                <element signature="e#0#12886#0" expanded="true" />
                 <element signature="imports" expanded="true" />
-                <element signature="e#1222#1223#0" expanded="true" />
                 <element signature="e#1241#1242#0" expanded="true" />
-                <element signature="e#1270#1271#0" expanded="true" />
-                <element signature="e#1291#1292#0" expanded="true" />
+                <element signature="e#1260#1261#0" expanded="true" />
+                <element signature="e#1289#1290#0" expanded="true" />
+                <element signature="e#1310#1311#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="LEM1802.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="LEM1802.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/LEM1802.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="195" column="34" selection-start-line="195" selection-start-column="34" selection-end-line="195" selection-end-column="34" />
+            <state vertical-scroll-proportion="-0.2247557">
+              <caret line="209" column="38" selection-start-line="209" selection-start-column="38" selection-end-line="209" selection-end-column="38" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#9424#9425#0" expanded="true" />
+                <element signature="e#9475#9476#0" expanded="true" />
+                <element signature="e#9512#9513#0" expanded="true" />
+                <element signature="e#9555#9556#0" expanded="true" />
+                <element signature="e#9591#9592#0" expanded="true" />
+                <element signature="e#9640#9641#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -98,13 +104,8 @@
         <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/GenericClock.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="34" column="0" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
-              <folding>
-                <element signature="e#832#833#0" expanded="true" />
-                <element signature="e#846#847#0" expanded="true" />
-                <element signature="e#883#884#0" expanded="true" />
-                <element signature="e#897#898#0" expanded="true" />
-              </folding>
+              <caret line="33" column="27" selection-start-line="33" selection-start-column="27" selection-end-line="33" selection-end-column="27" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -153,11 +154,11 @@
         <option value="$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/Generickeyboard.java" />
         <option value="$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/HardwareTracker.java" />
         <option value="$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/GenericKeyboard.java" />
-        <option value="$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/LEM1802.java" />
-        <option value="$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/DCPUManager.java" />
         <option value="$PROJECT_DIR$/src/be/monfils/x10clone/rendering/X10clone.java" />
         <option value="$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/GenericClock.java" />
         <option value="$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/DCPU.java" />
+        <option value="$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/DCPUManager.java" />
+        <option value="$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/LEM1802.java" />
       </list>
     </option>
   </component>
@@ -290,82 +291,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="dcpu" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="0x10clone" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="0x10clone" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="assets" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="0x10clone" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="0x10clone" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="assets" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Textures" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="0x10clone" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="0x10clone" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="assets" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Textures" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Planet" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="0x10clone" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="0x10clone" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="assets" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Textures" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lem1802" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -639,7 +564,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="11" />
+      <option name="time" value="21" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -690,12 +615,12 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="529" column="23" selection-start-line="529" selection-start-column="23" selection-end-line="529" selection-end-column="23" />
           <folding>
-            <element signature="e#0#12738#0" expanded="true" />
+            <element signature="e#0#12886#0" expanded="true" />
             <element signature="imports" expanded="true" />
-            <element signature="e#1222#1223#0" expanded="true" />
             <element signature="e#1241#1242#0" expanded="true" />
-            <element signature="e#1270#1271#0" expanded="true" />
-            <element signature="e#1291#1292#0" expanded="true" />
+            <element signature="e#1260#1261#0" expanded="true" />
+            <element signature="e#1289#1290#0" expanded="true" />
+            <element signature="e#1310#1311#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -706,6 +631,12 @@
           <caret line="195" column="34" selection-start-line="195" selection-start-column="34" selection-end-line="195" selection-end-column="34" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#9424#9425#0" expanded="true" />
+            <element signature="e#9475#9476#0" expanded="true" />
+            <element signature="e#9512#9513#0" expanded="true" />
+            <element signature="e#9555#9556#0" expanded="true" />
+            <element signature="e#9591#9592#0" expanded="true" />
+            <element signature="e#9640#9641#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -714,12 +645,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="34" column="0" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
-          <folding>
-            <element signature="e#832#833#0" expanded="true" />
-            <element signature="e#846#847#0" expanded="true" />
-            <element signature="e#883#884#0" expanded="true" />
-            <element signature="e#897#898#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -773,12 +699,12 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="60" column="23" selection-start-line="60" selection-start-column="23" selection-end-line="60" selection-end-column="23" />
           <folding>
-            <element signature="e#0#12738#0" expanded="true" />
+            <element signature="e#0#12886#0" expanded="true" />
             <element signature="imports" expanded="true" />
-            <element signature="e#1222#1223#0" expanded="true" />
             <element signature="e#1241#1242#0" expanded="true" />
-            <element signature="e#1270#1271#0" expanded="true" />
-            <element signature="e#1291#1292#0" expanded="true" />
+            <element signature="e#1260#1261#0" expanded="true" />
+            <element signature="e#1289#1290#0" expanded="true" />
+            <element signature="e#1310#1311#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -789,6 +715,12 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#9424#9425#0" expanded="true" />
+            <element signature="e#9475#9476#0" expanded="true" />
+            <element signature="e#9512#9513#0" expanded="true" />
+            <element signature="e#9555#9556#0" expanded="true" />
+            <element signature="e#9591#9592#0" expanded="true" />
+            <element signature="e#9640#9641#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -797,12 +729,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="19" column="18" selection-start-line="19" selection-start-column="18" selection-end-line="19" selection-end-column="18" />
-          <folding>
-            <element signature="e#832#833#0" expanded="true" />
-            <element signature="e#846#847#0" expanded="true" />
-            <element signature="e#883#884#0" expanded="true" />
-            <element signature="e#897#898#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -829,12 +756,12 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="73" column="0" selection-start-line="73" selection-start-column="0" selection-end-line="73" selection-end-column="0" />
           <folding>
-            <element signature="e#0#12738#0" expanded="true" />
+            <element signature="e#0#12886#0" expanded="true" />
             <element signature="imports" expanded="true" />
-            <element signature="e#1222#1223#0" expanded="true" />
             <element signature="e#1241#1242#0" expanded="true" />
-            <element signature="e#1270#1271#0" expanded="true" />
-            <element signature="e#1291#1292#0" expanded="true" />
+            <element signature="e#1260#1261#0" expanded="true" />
+            <element signature="e#1289#1290#0" expanded="true" />
+            <element signature="e#1310#1311#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -845,6 +772,12 @@
           <caret line="29" column="42" selection-start-line="29" selection-start-column="42" selection-end-line="29" selection-end-column="42" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#9424#9425#0" expanded="true" />
+            <element signature="e#9475#9476#0" expanded="true" />
+            <element signature="e#9512#9513#0" expanded="true" />
+            <element signature="e#9555#9556#0" expanded="true" />
+            <element signature="e#9591#9592#0" expanded="true" />
+            <element signature="e#9640#9641#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -981,60 +914,61 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/GenericClock.java">
+    <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/rendering/X10clone.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="34" column="0" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+          <caret line="63" column="0" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
           <folding>
-            <element signature="e#832#833#0" expanded="true" />
-            <element signature="e#846#847#0" expanded="true" />
-            <element signature="e#883#884#0" expanded="true" />
-            <element signature="e#897#898#0" expanded="true" />
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/LEM1802.java">
+    <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/GenericClock.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="195" column="34" selection-start-line="195" selection-start-column="34" selection-end-line="195" selection-end-column="34" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+          <caret line="33" column="27" selection-start-line="33" selection-start-column="27" selection-end-line="33" selection-end-column="27" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/DCPU.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="80" column="30" selection-start-line="80" selection-start-column="30" selection-end-line="80" selection-end-column="30" />
+          <caret line="571" column="0" selection-start-line="571" selection-start-column="0" selection-end-line="571" selection-end-column="0" />
           <folding>
-            <element signature="e#0#12738#0" expanded="true" />
+            <element signature="e#0#12886#0" expanded="true" />
             <element signature="imports" expanded="true" />
-            <element signature="e#1222#1223#0" expanded="true" />
             <element signature="e#1241#1242#0" expanded="true" />
-            <element signature="e#1270#1271#0" expanded="true" />
-            <element signature="e#1291#1292#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/rendering/X10clone.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="110" column="80" selection-start-line="110" selection-start-column="80" selection-end-line="110" selection-end-column="80" />
-          <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="e#1260#1261#0" expanded="true" />
+            <element signature="e#1289#1290#0" expanded="true" />
+            <element signature="e#1310#1311#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/DCPUManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.75570035">
-          <caret line="80" column="0" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="49" column="24" selection-start-line="49" selection-start-column="24" selection-end-line="49" selection-end-column="24" />
           <folding>
             <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/be/monfils/x10clone/dcpu/LEM1802.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.2247557">
+          <caret line="209" column="38" selection-start-line="209" selection-start-column="38" selection-end-line="209" selection-end-column="38" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#9424#9425#0" expanded="true" />
+            <element signature="e#9475#9476#0" expanded="true" />
+            <element signature="e#9512#9513#0" expanded="true" />
+            <element signature="e#9555#9556#0" expanded="true" />
+            <element signature="e#9591#9592#0" expanded="true" />
+            <element signature="e#9640#9641#0" expanded="true" />
           </folding>
         </state>
       </provider>

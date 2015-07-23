@@ -78,7 +78,7 @@ public class DCPUManager {
 	public String dump() {
 		String dump = "PC : " + (int) dcpu.pc + "\nSP : " + (int) dcpu.sp + "\nEX : " + (int) dcpu.ex + "\nIA " + (int) dcpu.ia + "\n" +
 				"A : " + (int) dcpu.registers[0] + "\nB : " + (int) dcpu.registers[1] + "\nC : " + (int) dcpu.registers[2] + "\nX : " + (int) dcpu.registers[3] + "\nY : " + (int) dcpu.registers[4] + "\nZ : " + (int) dcpu.registers[5] + "\nI : " + (int) dcpu.registers[6] + ", J : " + (int) dcpu.registers[7] + "\n" +
-				"cycles : " + (int) dcpu.cycles;
+				"cycles : " + (int) dcpu.cycles + "\nInterrupts : " + dcpu.interrupts.size() + "\nInterrupts enabled : " + !dcpu.isQueueingEnabled;
 		return dump;
 	}
 }

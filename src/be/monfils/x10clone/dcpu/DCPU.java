@@ -7,6 +7,7 @@
 package be.monfils.x10clone.dcpu;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -32,9 +33,7 @@ public class DCPU extends Thread implements Identifiable {
 	protected boolean stopped = false;
 	protected boolean isSkiping = false, isOnFire = false, isQueueingEnabled = false;
 
-	protected char[] interrupts = new char[MAX_QUEUE_SIZE];
-	int ip;
-	int iwp;
+	protected LinkedList<Character> interrupts = new LinkedList<>();
 
 	public DCPU(String id) {
 		this.id = id;
@@ -67,20 +66,18 @@ public class DCPU extends Thread implements Identifiable {
 		ex = 0;
 		ia = 0;
 		cycles = 0;
-		ip = 0;
-		iwp = 0;
 		cycles = 0;
 
 		while(!stopped) {
-			long start = System.nanoTime();
+			long start_ns = System.nanoTime();
 			for(int i = 0; i < BATCH_SIZE; ++i)
 				tick();
-			long end = System.nanoTime();
-			long expectedTime = BATCH_SIZE * (1 / SPEED_HZ) * 1000000000;
-			long waitTime = (start - end) - expectedTime;
-			if(waitTime > 0) {
+			long end_ns = System.nanoTime();
+			long expectedTime_ns = (long) ((BATCH_SIZE * (1f / (float) SPEED_HZ)) * 1000000000L);
+			long waitTime_ns = (expectedTime_ns - (end_ns - start_ns));
+			if(waitTime_ns > 0) {
 				try {
-					Thread.sleep(waitTime);
+					Thread.sleep(waitTime_ns / 1000000L, (int) (waitTime_ns % 1000000L));
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -100,14 +97,15 @@ public class DCPU extends Thread implements Identifiable {
 		}
 
 		if(!isQueueingEnabled) {
-			if(ip != iwp) {
-				char a = interrupts[ip = ip + 1 & 0xFF];
+			if(interrupts.size() > 0) {
+				char a = interrupts.getFirst();
 				if(ia > 0) {
 					isQueueingEnabled = true;
 					ram[--sp & 0xFFFF] = pc;
 					ram[--sp & 0xFFFF] = registers[0];
 					registers[0] = a;
 					pc = ia;
+					interrupts.removeFirst();
 				}
 			}
 		}
@@ -337,8 +335,9 @@ public class DCPU extends Thread implements Identifiable {
 	}
 
 	public void interrupt(char a) {
-		interrupts[iwp = iwp + 1 & 0xFF] = a;
-		if(iwp == ip) { //Woops, overflowed the interrupt queue - catching fire (insert evil laugh here)
+		interrupts.add(a);
+		if(interrupts.size() > 256) { //Woops, overflowed the interrupt queue - catching fire (insert evil laugh here)
+			interrupts.removeLast();
 			isOnFire = true;
 		}
 	}

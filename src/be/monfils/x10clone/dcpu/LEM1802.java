@@ -15,16 +15,11 @@ import java.nio.ByteBuffer;
 public class LEM1802 extends DCPUHardware {
 
 	public static final int TYPE = 0x7349f615, REVISION = 0x1802, MANUFACTURER = 0x1c6c8b36;
-	public static final int WIDTH_CHARS = 32;
-	public static final int HEIGHT_CHARS = 12;
 	public static final int WIDTH_PIXELS = 128;
 	public static final int HEIGHT_PIXELS = 96;
 	private static final int START_DURATION = 60;
 	private static final int BORDER_WIDTH = 4;
 	private int lightColor;
-	private int[] palette = new int[16];
-	private char[] font = new char[256];
-	private int[] pixels = new int[12289];
 	private final static int[] bootImage_raw = new int[12288];
 	private final static int[][][] bootImage = new int[128][96][3];
 	static {
@@ -74,7 +69,7 @@ public class LEM1802 extends DCPUHardware {
 	};
 
 	private int screenMemMap, fontMemMap, paletteMemMap, startDelay;
-	private char borderColor[] = new char[3];
+	private char borderColor = 0x0;
 
 	public LEM1802(String id) {
 		super(TYPE, REVISION, MANUFACTURER);
@@ -96,9 +91,9 @@ public class LEM1802 extends DCPUHardware {
 					if(dcpu.ram[(screenMemMap + pos) & 0xFFFF] != 0) {
 						char fgCol = (char) ((dcpu.ram[(screenMemMap + pos) & 0xFFFF] & 0xF000) >> 12);
 						char bgCol = (char) ((dcpu.ram[(screenMemMap + pos) & 0xFFFF] & 0xF00) >> 8);
-						boolean blink = ((dcpu.ram[(screenMemMap + pos & 0xFFFF)] & 0x80) >> 7) == 1; //TODO : Check if that actually works
+						boolean blink = ((dcpu.ram[(screenMemMap + pos & 0xFFFF)] & 0x80) >> 7) == 1;
 						char character = (char) (dcpu.ram[(screenMemMap + pos) & 0xFFFF] & 0x7F);
-						char fontChar[] = new char[] {font[character * 2], font[character * 2 + 1]};
+						char fontChar[] = new char[] {font(character * 2), font(character * 2 + 1)};
 
 						if(!blink || !blinkOn) {
 							for(int i = 0; i < 4; ++i) {
@@ -109,13 +104,13 @@ public class LEM1802 extends DCPUHardware {
 									int px = BORDER_WIDTH + x * 4 + i;
 									int py = BORDER_WIDTH + y * 8 + j;
 									if(pixel == 1) {
-										colorBuffer2D[px][py][0] = (char) (((palette[fgCol] & 0xF00) >> 4) | 0xF);
-										colorBuffer2D[px][py][1] = (char) ((palette[fgCol] & 0xF0) | 0xF);
-										colorBuffer2D[px][py][2] = (char) (((palette[fgCol] & 0xF) << 4) | 0xF);
+										colorBuffer2D[px][py][0] = red(palette(fgCol));
+										colorBuffer2D[px][py][1] = green(palette(fgCol));
+										colorBuffer2D[px][py][2] = blue(palette(fgCol));
 									} else {
-										colorBuffer2D[px][py][0] = (char) (((palette[bgCol] & 0xF00) >> 4) | 0xF);
-										colorBuffer2D[px][py][1] = (char) ((palette[bgCol] & 0xF0) | 0xF);
-										colorBuffer2D[px][py][2] = (char) (((palette[bgCol] & 0xF) << 4) | 0xF);
+										colorBuffer2D[px][py][0] = red(palette(bgCol));
+										colorBuffer2D[px][py][1] = green(palette(bgCol));
+										colorBuffer2D[px][py][2] = blue(palette(bgCol));
 									}
 								}
 							}
@@ -128,14 +123,14 @@ public class LEM1802 extends DCPUHardware {
 			for(int y = 95 + 2 * BORDER_WIDTH; y >=0 ; --y) {
 				for(int x = 0; x < 128 + 2 * BORDER_WIDTH; ++x) {
 					if(y < BORDER_WIDTH || (y < 96 + 2 * BORDER_WIDTH && y >= 96 + BORDER_WIDTH)) {
-						buffer[pos * 4] = borderColor[0];
-						buffer[pos * 4 + 1] = borderColor[1];
-						buffer[pos * 4 + 2] = borderColor[2];
+						buffer[pos * 4] = red(palette(borderColor));
+						buffer[pos * 4 + 1] = green(palette(borderColor));
+						buffer[pos * 4 + 2] = blue(palette(borderColor));
 						buffer[pos * 4 + 3] = 128;
 					} else if(x < BORDER_WIDTH || (x < 128 + 2 * BORDER_WIDTH && x >= 128 + BORDER_WIDTH)) {
-						buffer[pos * 4] = borderColor[0];
-						buffer[pos * 4 + 1] = borderColor[1];
-						buffer[pos * 4 + 2] = borderColor[2];
+						buffer[pos * 4] = red(palette(borderColor));
+						buffer[pos * 4 + 1] = green(palette(borderColor));
+						buffer[pos * 4 + 2] = blue(palette(borderColor));
 						buffer[pos * 4 + 3] = 128;
 					} else {
 						buffer[pos * 4] = colorBuffer2D[x][y][0];
@@ -161,7 +156,7 @@ public class LEM1802 extends DCPUHardware {
 						buffer[pos * 4 + 1] = 0;
 						buffer[pos * 4 + 2] = 0;
 						buffer[pos * 4 + 3] = 128;
-					} else if(x < BORDER_WIDTH || (x < 128 + 2 * BORDER_WIDTH && x >= 128 +BORDER_WIDTH)) {
+					} else if(x < BORDER_WIDTH || (x < 128 + 2 * BORDER_WIDTH && x >= 128 + BORDER_WIDTH)) {
 						buffer[pos * 4] = 0;
 						buffer[pos * 4 + 1] = 0;
 						buffer[pos * 4 + 2] = 0;
@@ -198,17 +193,16 @@ public class LEM1802 extends DCPUHardware {
 				break;
 			case 2: //MEM_MAP_PALETTE
 				paletteMemMap = dcpu.registers[1];
-				loadPalette(dcpu.ram, paletteMemMap);
 				break;
 			case 3: //SET_BORDER_COLOR
-				int col = dcpu.registers[1] & 0xF;
-				borderColor[0] = (char) (((palette[col] & 0xF00) >> 4) | 0xF);
-				borderColor[1] = (char) ((palette[col] & 0xF0) | 0xF);
-				borderColor[2] = (char) (((palette[col] & 0xF) << 4) | 0xF);
+				borderColor = (char) (dcpu.registers[1] & 0xF);
+				/* borderColor[0] = (char) (((palette(col) & 0xF00) >> 4) | 0xF);
+				borderColor[1] = (char) ((palette(col) & 0xF0) | 0xF);
+				borderColor[2] = (char) (((palette(col) & 0xF) << 4) | 0xF); */
 				break;
 			case 4: //MEM_DUMP_FONT
 				offset = dcpu.registers[1];
-				for(int i = 0; i < font.length; ++i) {
+				for(int i = 0; i < 256; ++i) {
 					dcpu.ram[offset + i & 0xFFFF] = defaultFont[i];
 				}
 				dcpu.cycles += 256;
@@ -222,14 +216,32 @@ public class LEM1802 extends DCPUHardware {
 		}
 	}
 
-	protected void loadPalette(char[] ram, int offset) {
-		for(int i = 0; i < 16; ++i) {
-			char ch = ram[(offset + i)];
-			int b = (ch >> '\000' & 0xF) * 17;
-			int g = (ch >> '\004' & 0xF) * 17;
-			int r = (ch >> '\b' & 0xF) * 17;
-			palette[i] = (0xFF000000 | r << 16 | g << 8 | b);
+	protected char palette(int col) {
+		if(paletteMemMap == 0) {
+			return defaultPalette[col];
+		} else {
+			return dcpu.ram[paletteMemMap + col];
 		}
+	}
+
+	protected char font(int f) {
+		if(paletteMemMap == 0) {
+			return defaultFont[f];
+		} else {
+			return dcpu.ram[fontMemMap + f];
+		}
+	}
+
+	protected char red(char color) {
+		return (char) (((color & 0xF00) >> 4) | 0xF);
+	}
+
+	protected char green(char color) {
+		return (char) ((color & 0xF0) | 0xF);
+	}
+
+	protected char blue(char color) {
+		return (char) (((color & 0xF) << 4) | 0xF);
 	}
 
 	@Override
@@ -249,35 +261,13 @@ public class LEM1802 extends DCPUHardware {
 		lightColor = 0;
 		screenMemMap = 0;
 		fontMemMap = 0;
-		borderColor = new char[3];
+		paletteMemMap = 0;
+		borderColor = 0;
 		startDelay = 0;
-		resetPalette();
-		resetFont();
-		resetPixels();
 	}
 
 	@Override
 	public void powerOn() {
-		resetPalette();
-		resetFont();
-		resetPixels();
-	}
-
-	private void resetFont() {
-		for(int i = 0; i < 256; ++i)
-			font[i] = defaultFont[i];
-	}
-
-	private void resetPalette() {
-		for(int i =  0 ; i < 16; ++i) {
-			palette[i] = defaultPalette[i];
-		}
-	}
-
-	private void resetPixels() {
-		for(int i = 0; i < pixels.length; ++i) {
-			pixels[i] = 0;
-		}
 	}
 
 }
