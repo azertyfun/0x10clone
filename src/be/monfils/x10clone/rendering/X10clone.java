@@ -2,32 +2,32 @@ package be.monfils.x10clone.rendering;
 
 import be.monfils.x10clone.dcpu.*;
 import com.jme3.app.SimpleApplication;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
+import com.jme3.input.RawInputListener;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.event.*;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
+import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
-import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
-import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 import com.jme3.util.TangentBinormalGenerator;
+import org.lwjgl.input.Keyboard;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 
 /**
@@ -42,6 +42,9 @@ public class X10clone extends SimpleApplication {
 	private BitmapText hello_text;
 	public static HardwareTracker hardwareTracker = new HardwareTracker();
 	private LinkedList<DCPUModel> dcpus = new LinkedList<>();
+	private Node dcpuScreens;
+	private boolean focusedOnDCPU;
+	private Spatial focusedDCPU;
 
 	public static void main(String args[]) {
 		AppSettings settings = new AppSettings(true);
@@ -80,9 +83,13 @@ public class X10clone extends SimpleApplication {
 		planetGeom.setLocalTranslation(1000, 30, -1000);
 		rootNode.attachChild(planetGeom);
 
+		dcpuScreens = new Node();
+		rootNode.attachChild(dcpuScreens);
 
 		dcpus.add(new DCPUModel(assetManager, rootNode, new Vector3f(2, 0, 0), new Quaternion(), "assets/DCPU/palettetest.bin"));
+		dcpuScreens.attachChild(dcpus.getLast().getScreen());
 		dcpus.add(new DCPUModel(assetManager, rootNode, new Vector3f(-5, 0, 5), new Quaternion().fromAngleAxis(3.14159f / 2.0f, Vector3f.UNIT_Y), "assets/DCPU/FrOSt.bin"));
+		dcpuScreens.attachChild(dcpus.getLast().getScreen());
 
 		sun = new DirectionalLight();
 		sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f));
@@ -101,6 +108,36 @@ public class X10clone extends SimpleApplication {
 		guiNode.attachChild(hello_text);
 
 		initKeys();
+
+		inputManager.addRawInputListener(new RawInputListener() {
+			@Override
+			public void beginInput() {}
+			@Override
+			public void endInput() {}
+			@Override
+			public void onJoyAxisEvent(JoyAxisEvent joyAxisEvent) {}
+			@Override
+			public void onJoyButtonEvent(JoyButtonEvent joyButtonEvent) {}
+			@Override
+			public void onMouseMotionEvent(MouseMotionEvent mouseMotionEvent) {}
+			@Override
+			public void onMouseButtonEvent(MouseButtonEvent mouseButtonEvent) {}
+			@Override
+			public void onTouchEvent(TouchEvent touchEvent) {}
+
+			@Override
+			public void onKeyEvent(KeyInputEvent keyInputEvent) {
+				if(focusedOnDCPU && focusedDCPU != null && !keyInputEvent.isReleased()) { //For an unknown reason, if isRealeased() == true, then getKeyChar() doesn't return a valid character...
+					GenericKeyboard k = hardwareTracker.getKeyboard(focusedDCPU.getUserData("Keyboard"));
+					if(k != null) {
+						if(keyInputEvent.getKeyChar() >= 0x20 && keyInputEvent.getKeyChar() < 0x7F)
+							k.pressedKey(keyInputEvent.getKeyChar());
+						else
+							k.pressedKeyCode(keyInputEvent.getKeyCode());
+					}
+				}
+			}
+		});
 	}
 
 	private void initKeys() {
@@ -109,23 +146,26 @@ public class X10clone extends SimpleApplication {
 		inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_LEFT));
 		inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_RIGHT));
 		inputManager.addMapping("ToggleFlyCam", new KeyTrigger(KeyInput.KEY_RETURN), new KeyTrigger(KeyInput.KEY_NUMPADENTER));
+		inputManager.addMapping("focusDCPU", new KeyTrigger(KeyInput.KEY_TAB));
 
 		inputManager.addListener(analogListener, "Forwards", "Backwards", "Left", "Right");
-		inputManager.addListener(actionListener, "ToggleFlyCam");
+		inputManager.addListener(actionListener, "ToggleFlyCam", "focusDCPU");
 	}
 
 	private AnalogListener analogListener = new AnalogListener() {
 		@Override
 		public void onAnalog(String name, float value, float tpf) {
-			if(name.equals("Forwards")) {
-				suzanne.move(tpf, 0, 0);
-			} else if(name.equals("Backwards")) {
-				suzanne.move(-tpf, 0, 0);
-			} else if(name.equals("Left")) {
-				suzanne.move(0, 0, tpf);
-			} else if(name.equals("Right")) {
-				suzanne.move(0, 0, -tpf);
+			if(!focusedOnDCPU) {
+				if (name.equals("Forwards")) {
+					suzanne.move(tpf, 0, 0);
+				} else if (name.equals("Backwards")) {
+					suzanne.move(-tpf, 0, 0);
+				} else if (name.equals("Left")) {
+					suzanne.move(0, 0, tpf);
+				} else if (name.equals("Right")) {
+					suzanne.move(0, 0, -tpf);
 
+				}
 			}
 		}
 	};
@@ -133,10 +173,28 @@ public class X10clone extends SimpleApplication {
 	private ActionListener actionListener = new ActionListener() {
 		@Override
 		public void onAction(String name, boolean pressed, float tpf) {
-			if(!pressed) //on release
-				flyCam.setEnabled(!flyCam.isEnabled());
-			if(flyCam.isEnabled()) {
-				mouseInput.setCursorVisible(false);
+			if(name.equals("ToggleFlyCam") && !focusedOnDCPU) {
+				if (!pressed) //on release
+					flyCam.setEnabled(!flyCam.isEnabled());
+				if (flyCam.isEnabled()) {
+					mouseInput.setCursorVisible(false);
+				}
+			} else if(name.equals("focusDCPU") && !pressed) {
+				if(!focusedOnDCPU) {
+					CollisionResults results = new CollisionResults();
+					Ray ray = new Ray(cam.getLocation(), cam.getDirection());
+					dcpuScreens.collideWith(ray, results);
+					if (results.size() > 0) {
+						CollisionResult closest = results.getClosestCollision();
+						focusedOnDCPU = true;
+						flyCam.setEnabled(false);
+						focusedDCPU = closest.getGeometry();
+					}
+				} else {
+					flyCam.setEnabled(true);
+					mouseInput.setCursorVisible(false);
+					focusedOnDCPU = false;
+				}
 			}
 		}
 	};

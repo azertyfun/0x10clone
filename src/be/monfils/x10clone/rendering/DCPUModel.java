@@ -1,6 +1,7 @@
 package be.monfils.x10clone.rendering;
 
 import be.monfils.x10clone.dcpu.DCPUManager;
+import be.monfils.x10clone.dcpu.GenericKeyboard;
 import be.monfils.x10clone.dcpu.HardwareTracker;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
@@ -51,6 +52,8 @@ public class DCPUModel {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		screen.setUserData("Keyboard", dcpuManager.getKeyboards().getFirst().getID());
 	}
 
 	public void tick() {
@@ -67,5 +70,9 @@ public class DCPUModel {
 
 	public void stop() {
 		dcpuManager.stopDCPU();
+	}
+
+	public Spatial getScreen() {
+		return screen;
 	}
 }
