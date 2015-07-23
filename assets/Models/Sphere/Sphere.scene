@@ -1,0 +1,25 @@
+<scene previous_export_time="1437474558.9397593" export_time="1437484893.8337057" exported_by="nathan" formatVersion="1.0.1" >
+  <nodes >
+    <node name="Icosphere" >
+      <position x="0.000000" z="-0.000000" y="0.000000" />
+      <rotation qz="-0.000000" qx="0.000000" qy="0.000000" qw="1.000000" />
+      <scale x="1.000000" z="1.000000" y="1.000000" />
+      <user_data type="int" name="uid" value="102" />
+      <game >
+        <sensors />
+        <actuators />
+      </game>
+      <entity inertia_tensor="0.4000000059604645" velocity_min="0.0" lock_trans_y="False" lock_trans_z="False" friction_x="1.0" actor="False" damping_trans="0.03999999910593033" damping_rot="0.10000000149011612" meshFile="Icosphere.mesh" mass_radius="1.0" lock_rot_z="False" anisotropic_friction="False" mass="1.0" lock_rot_y="False" velocity_max="0.0" friction_z="1.0" lock_rot_x="False" physics_type="STATIC" ghost="False" lock_trans_x="False" friction_y="1.0" name="Icosphere" />
+    </node>
+  </nodes>
+  <externals >
+    <item type="material" >
+      <file name="/home/nathan/MEGA/java/0x10clone/assets/Models/Sphere/Material.material" />
+    </item>
+  </externals>
+  <environment >
+    <colourBackground r="0.05087608844041824" b="0.05087608844041824" g="0.05087608844041824" />
+    <colourDiffuse r="0.05087608844041824" b="0.05087608844041824" g="0.05087608844041824" />
+    <colourAmbient r="0.0" b="0.0" g="0.0" />
+  </environment>
+</scene>

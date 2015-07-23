@@ -1,0 +1,46 @@
+<scene >
+  <entity id="100" >
+    <component type="EC_Name" sync="1" >
+      <attribute name="name" value="Suzanne" />
+      <attribute name="description" value="" />
+    </component>
+    <component type="EC_Placeable" sync="1" >
+      <attribute name="Transform" value="0.000000,0.000000,-0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" />
+      <attribute name="Show bounding box" value="false" />
+      <attribute name="Visible" value="true" />
+      <attribute name="Selection layer" value="1" />
+    </component>
+    <component type="EC_Mesh" sync="1" >
+      <attribute name="Mesh ref" value="Suzanne.mesh" />
+      <attribute name="Mesh materials" value="" />
+      <attribute name="Draw distance" value="0" />
+      <attribute name="Cast shadows" value="false" />
+    </component>
+  </entity>
+  <entity id="101" >
+    <component type="EC_Name" sync="1" >
+      <attribute name="name" value="Lamp" />
+      <attribute name="description" value="" />
+    </component>
+    <component type="EC_Placeable" sync="1" >
+      <attribute name="Transform" value="4.076245,5.903862,-1.005454,127.261052,106.936317,-3.163708,1.000000,1.000000,1.000000" />
+      <attribute name="Show bounding box" value="false" />
+      <attribute name="Visible" value="true" />
+      <attribute name="Selection layer" value="1" />
+    </component>
+    <component type="EC_Name" sync="1" >
+      <attribute name="name" value="Lamp" />
+    </component>
+    <component type="EC_Light" sync="1" >
+      <attribute name="light type" value="0" />
+      <attribute name="diffuse color" value="1.0 1.0 1.0 1" />
+      <attribute name="specular color" value="1.0 1.0 1.0 1" />
+      <attribute name="cast shadows" value="true" />
+      <attribute name="light range" value="59.99996566772461" />
+      <attribute name="brightness" value="1.0" />
+      <attribute name="constant atten" value="0" />
+      <attribute name="linear atten" value="0.25" />
+      <attribute name="quadratic atten" value="0.0" />
+    </component>
+  </entity>
+</scene>
