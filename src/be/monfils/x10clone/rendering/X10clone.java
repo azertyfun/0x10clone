@@ -86,7 +86,7 @@ public class X10clone extends SimpleApplication {
 		dcpuScreens = new Node();
 		rootNode.attachChild(dcpuScreens);
 
-		dcpus.add(new DCPUModel(assetManager, rootNode, new Vector3f(2, 0, 0), new Quaternion(), "assets/DCPU/palettetest.bin"));
+		dcpus.add(new DCPUModel(assetManager, rootNode, new Vector3f(2, 0, 0), new Quaternion(), "assets/DCPU/os (copy).bin"));
 		dcpuScreens.attachChild(dcpus.getLast().getScreen());
 		dcpus.add(new DCPUModel(assetManager, rootNode, new Vector3f(-5, 0, 5), new Quaternion().fromAngleAxis(3.14159f / 2.0f, Vector3f.UNIT_Y), "assets/DCPU/FrOSt.bin"));
 		dcpuScreens.attachChild(dcpus.getLast().getScreen());
@@ -176,9 +176,11 @@ public class X10clone extends SimpleApplication {
 			if(name.equals("ToggleFlyCam") && !focusedOnDCPU) {
 				if (!pressed) //on release
 					flyCam.setEnabled(!flyCam.isEnabled());
-				if (flyCam.isEnabled()) {
+				
+				if (flyCam.isEnabled())
 					mouseInput.setCursorVisible(false);
-				}
+				else
+					mouseInput.setCursorVisible(true);
 			} else if(name.equals("focusDCPU") && !pressed) {
 				if(!focusedOnDCPU) {
 					CollisionResults results = new CollisionResults();
@@ -187,8 +189,9 @@ public class X10clone extends SimpleApplication {
 					if (results.size() > 0) {
 						CollisionResult closest = results.getClosestCollision();
 						focusedOnDCPU = true;
-						flyCam.setEnabled(false);
 						focusedDCPU = closest.getGeometry();
+						flyCam.setEnabled(false);
+						mouseInput.setCursorVisible(true);
 					}
 				} else {
 					flyCam.setEnabled(true);

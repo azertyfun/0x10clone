@@ -225,7 +225,7 @@ public class LEM1802 extends DCPUHardware {
 	}
 
 	protected char font(int f) {
-		if(paletteMemMap == 0) {
+		if(fontMemMap == 0) {
 			return defaultFont[f];
 		} else {
 			return dcpu.ram[fontMemMap + f];
