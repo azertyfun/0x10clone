@@ -7,10 +7,10 @@ Current features :
 
 * Rendering some stuff
 * DCPU-16
-* DCPU Peripherals : LEM1802, Generic Clock
+* DCPU Peripherals : LEM1802, Generic Clock, Generic Keyboard
 
 Upcoming features (aka self-motivational list) :
 ------------------------------------------------
-* DCPU Peripherals : Generic Keyboard, Speaker, M35FD, SPC2000, SPED-3
+* DCPU Peripherals : Speaker, M35FD, SPC2000, SPED-3
 * Spaceships
 * Other cool stuff

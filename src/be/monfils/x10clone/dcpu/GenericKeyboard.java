@@ -1,14 +1,6 @@
 package be.monfils.x10clone.dcpu;
 
-import be.monfils.x10clone.rendering.X10clone;
-import com.jme3.export.JmeExporter;
-import com.jme3.export.JmeImporter;
-import com.jme3.export.Savable;
 import com.jme3.input.KeyInput;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by nathan on 22/07/15.

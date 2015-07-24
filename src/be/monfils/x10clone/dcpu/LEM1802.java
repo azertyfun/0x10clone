@@ -77,14 +77,14 @@ public class LEM1802 extends DCPUHardware {
 	}
 
 	public Texture render() {
-		ByteBuffer data = ByteBuffer.allocateDirect((128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 4);
+		ByteBuffer data = ByteBuffer.allocateDirect((128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 3);
 
 		if(screenMemMap != 0 && startDelay == 0) {
 			/*
 			 * This ram to texture algorithm is heavily inspired from mappum's in his javascript emulator. Check it out there : https://github.com/mappum/DCPU-16/blob/master/lib/LEM1802.js
 			 */
 			char colorBuffer2D[][][] = new char[128 + 2 * BORDER_WIDTH][96 + 2 * BORDER_WIDTH][3];
-			char buffer[] = new char[(128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 4];
+			char buffer[] = new char[(128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 3];
 			int pos = 0;
 			for(int y = 0; y < 12; ++y) {
 				for(int x = 0; x < 32; ++x) {
@@ -123,20 +123,17 @@ public class LEM1802 extends DCPUHardware {
 			for(int y = 95 + 2 * BORDER_WIDTH; y >=0 ; --y) {
 				for(int x = 0; x < 128 + 2 * BORDER_WIDTH; ++x) {
 					if(y < BORDER_WIDTH || (y < 96 + 2 * BORDER_WIDTH && y >= 96 + BORDER_WIDTH)) {
-						buffer[pos * 4] = red(palette(borderColor));
-						buffer[pos * 4 + 1] = green(palette(borderColor));
-						buffer[pos * 4 + 2] = blue(palette(borderColor));
-						buffer[pos * 4 + 3] = 128;
+						buffer[pos * 3] = red(palette(borderColor));
+						buffer[pos * 3 + 1] = green(palette(borderColor));
+						buffer[pos * 3 + 2] = blue(palette(borderColor));
 					} else if(x < BORDER_WIDTH || (x < 128 + 2 * BORDER_WIDTH && x >= 128 + BORDER_WIDTH)) {
-						buffer[pos * 4] = red(palette(borderColor));
-						buffer[pos * 4 + 1] = green(palette(borderColor));
-						buffer[pos * 4 + 2] = blue(palette(borderColor));
-						buffer[pos * 4 + 3] = 128;
+						buffer[pos * 3] = red(palette(borderColor));
+						buffer[pos * 3 + 1] = green(palette(borderColor));
+						buffer[pos * 3 + 2] = blue(palette(borderColor));
 					} else {
-						buffer[pos * 4] = colorBuffer2D[x][y][0];
-						buffer[pos * 4 + 1] = colorBuffer2D[x][y][1];
-						buffer[pos * 4 + 2] = colorBuffer2D[x][y][2];
-						buffer[pos * 4 + 3] = 128;
+						buffer[pos * 3] = colorBuffer2D[x][y][0];
+						buffer[pos * 3 + 1] = colorBuffer2D[x][y][1];
+						buffer[pos * 3 + 2] = colorBuffer2D[x][y][2];
 					}
 					pos++;
 				}
@@ -147,25 +144,22 @@ public class LEM1802 extends DCPUHardware {
 			}
 			data.put(buffer_b);
 		} else {
-			char buffer[] = new char[(128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 4];
+			char buffer[] = new char[(128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 3];
 			int pos = 0;
 			for(int y = 0; y < 96 + 2 * BORDER_WIDTH; ++y) {
 				for(int x = 0; x < 128 + 2 * BORDER_WIDTH; ++x) {
 					if(y < BORDER_WIDTH || (y < 96 + 2 * BORDER_WIDTH && y >= 96 + BORDER_WIDTH)) {
-						buffer[pos * 4] = 0;
-						buffer[pos * 4 + 1] = 0;
-						buffer[pos * 4 + 2] = 0;
-						buffer[pos * 4 + 3] = 128;
+						buffer[pos * 3] = 0;
+						buffer[pos * 3 + 1] = 0;
+						buffer[pos * 3 + 2] = 0;
 					} else if(x < BORDER_WIDTH || (x < 128 + 2 * BORDER_WIDTH && x >= 128 + BORDER_WIDTH)) {
-						buffer[pos * 4] = 0;
-						buffer[pos * 4 + 1] = 0;
-						buffer[pos * 4 + 2] = 0;
-						buffer[pos * 4 + 3] = 128;
+						buffer[pos * 3] = 0;
+						buffer[pos * 3 + 1] = 0;
+						buffer[pos * 3 + 2] = 0;
 					} else {
-						buffer[pos * 4] = (char) bootImage[x - BORDER_WIDTH][y - BORDER_WIDTH][0];
-						buffer[pos * 4 + 1] = (char) bootImage[x - BORDER_WIDTH][y - BORDER_WIDTH][1];
-						buffer[pos * 4 + 2] = (char) bootImage[x - BORDER_WIDTH][y - BORDER_WIDTH][2];
-						buffer[pos * 4 + 3] = 128;
+						buffer[pos * 3] = (char) bootImage[x - BORDER_WIDTH][y - BORDER_WIDTH][0];
+						buffer[pos * 3 + 1] = (char) bootImage[x - BORDER_WIDTH][y - BORDER_WIDTH][1];
+						buffer[pos * 3 + 2] = (char) bootImage[x - BORDER_WIDTH][y - BORDER_WIDTH][2];
 					}
 					pos++;
 				}
@@ -173,7 +167,7 @@ public class LEM1802 extends DCPUHardware {
 		}
 
 		Texture tex = new Texture2D();
-		tex.setImage(new Image(Image.Format.RGBA8, WIDTH_PIXELS + 2 * BORDER_WIDTH, HEIGHT_PIXELS + 2 * BORDER_WIDTH, data));
+		tex.setImage(new Image(Image.Format.RGB8, WIDTH_PIXELS + 2 * BORDER_WIDTH, HEIGHT_PIXELS + 2 * BORDER_WIDTH, data));
 		tex.setMagFilter(Texture.MagFilter.Nearest);
 		return tex;
 	}

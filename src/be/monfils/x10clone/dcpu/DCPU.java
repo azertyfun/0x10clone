@@ -68,12 +68,13 @@ public class DCPU extends Thread implements Identifiable {
 		cycles = 0;
 		cycles = 0;
 
+		long expectedTime_ns = (long) ((BATCH_SIZE * (1f / (float) SPEED_HZ)) * 1000000000L);
+
 		while(!stopped) {
 			long start_ns = System.nanoTime();
 			for(int i = 0; i < BATCH_SIZE; ++i)
 				tick();
 			long end_ns = System.nanoTime();
-			long expectedTime_ns = (long) ((BATCH_SIZE * (1f / (float) SPEED_HZ)) * 1000000000L);
 			long waitTime_ns = (expectedTime_ns - (end_ns - start_ns));
 			if(waitTime_ns > 0) {
 				try {
