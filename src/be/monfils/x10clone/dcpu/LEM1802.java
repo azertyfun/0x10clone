@@ -5,6 +5,8 @@ import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,17 +22,17 @@ public class LEM1802 extends DCPUHardware {
 	private static final int START_DURATION = 60;
 	private static final int BORDER_WIDTH = 4;
 	private int lightColor;
-	private final static int[] bootImage_raw = new int[12288];
 	private final static int[][][] bootImage = new int[128][96][3];
 	static {
 		try {
-			ImageIO.read(new File("assets/Textures/lem1802/boot.png")).getRGB(0, 0, 128, 96, bootImage_raw, 0, 128);
+			BufferedImage image = ImageIO.read(new File("assets/Textures/lem1802/boot.png"));
+			byte[] bootImage_raw = ((DataBufferByte) image.getData().getDataBuffer()).getData();
 			int pos = 0;
 			for(int y = 0; y < 96; ++y) {
 				for(int x = 0; x < 128; ++x) {
-					bootImage[x][y][0] = bootImage_raw[pos & 0xFF0000];
-					bootImage[x][y][1] = bootImage_raw[pos & 0xFF00];
-					bootImage[x][y][2] = bootImage_raw[pos & 0xFF];
+					bootImage[x][y][0] = bootImage_raw[pos * 3 + 2];
+					bootImage[x][y][1] = bootImage_raw[pos * 3 + 1];
+					bootImage[x][y][2] = bootImage_raw[pos * 3];
 
 					pos++;
 				}
@@ -146,16 +148,17 @@ public class LEM1802 extends DCPUHardware {
 		} else {
 			char buffer[] = new char[(128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 3];
 			int pos = 0;
-			for(int y = 0; y < 96 + 2 * BORDER_WIDTH; ++y) {
+			for(int y = 95 + 2 * BORDER_WIDTH; y >=0 ; --y) {
 				for(int x = 0; x < 128 + 2 * BORDER_WIDTH; ++x) {
+					char borderColor = (char) (startDelay * 16 / START_DURATION);
 					if(y < BORDER_WIDTH || (y < 96 + 2 * BORDER_WIDTH && y >= 96 + BORDER_WIDTH)) {
-						buffer[pos * 3] = 0;
-						buffer[pos * 3 + 1] = 0;
-						buffer[pos * 3 + 2] = 0;
+						buffer[pos * 3] = red(palette(borderColor));
+						buffer[pos * 3 + 1] = green(palette(borderColor));
+						buffer[pos * 3 + 2] = blue(palette(borderColor));
 					} else if(x < BORDER_WIDTH || (x < 128 + 2 * BORDER_WIDTH && x >= 128 + BORDER_WIDTH)) {
-						buffer[pos * 3] = 0;
-						buffer[pos * 3 + 1] = 0;
-						buffer[pos * 3 + 2] = 0;
+						buffer[pos * 3] = red(palette(borderColor));
+						buffer[pos * 3 + 1] = green(palette(borderColor));
+						buffer[pos * 3 + 2] = blue(palette(borderColor));
 					} else {
 						buffer[pos * 3] = (char) bootImage[x - BORDER_WIDTH][y - BORDER_WIDTH][0];
 						buffer[pos * 3 + 1] = (char) bootImage[x - BORDER_WIDTH][y - BORDER_WIDTH][1];
@@ -164,6 +167,11 @@ public class LEM1802 extends DCPUHardware {
 					pos++;
 				}
 			}
+			byte[] buffer_b = new byte[buffer.length];
+			for(int i = 0; i < buffer.length; ++i) {
+				buffer_b[i] = (byte) buffer[i];
+			}
+			data.put(buffer_b);
 		}
 
 		Texture tex = new Texture2D();

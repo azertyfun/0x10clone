@@ -24,13 +24,13 @@ public class DCPU extends Thread implements Identifiable {
 
 	private String id;
 
-	protected char[] ram = new char[RAM_SIZE];
+	protected char[] ram = new char[RAM_SIZE], ram_init = new char[RAM_SIZE];
 	protected char[] registers = new char[TOTAL_REGS];
 	protected char pc, sp, ex, ia;
 	protected long cycles;
 	protected ArrayList<DCPUHardware> hardware = new ArrayList<>();
 
-	protected boolean stopped = false;
+	protected boolean stopped = false, pausing = false, paused = false;
 	protected boolean isSkiping = false, isOnFire = false, isQueueingEnabled = false;
 
 	protected LinkedList<Character> interrupts = new LinkedList<>();
@@ -54,6 +54,9 @@ public class DCPU extends Thread implements Identifiable {
 			for(int i = 0; i < RAM_SIZE; ++i)
 				this.ram[i] = ram[i];
 		}
+
+		for(int i = 0; i < RAM_SIZE; ++i)
+			this.ram_init[i] = ram[i];
 	}
 
 	@Override
@@ -82,6 +85,17 @@ public class DCPU extends Thread implements Identifiable {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+			}
+			if(pausing) {
+				paused = true;
+				while (pausing) {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				paused = false;
 			}
 		}
 	}
@@ -568,5 +582,36 @@ public class DCPU extends Thread implements Identifiable {
 	@Override
 	public void setID(String id) {
 		this.id = id;
+	}
+
+	public void reset() {
+		pausing = true;
+		while(!paused) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		for(int i = 0; i < registers.length; ++i)
+			registers[i] = 0;
+		for(int i = 0; i < RAM_SIZE; ++i)
+			ram[i] = ram_init[i];
+
+		pc = 0;
+		sp = 0;
+		ex = 0;
+		ia = 0;
+		isOnFire = false;
+		isQueueingEnabled = false;
+		isSkiping = false;
+		interrupts.clear();
+
+		for(DCPUHardware h : hardware) {
+			h.powerOff();
+			h.powerOn();
+		}
+		pausing = false;
 	}
 }

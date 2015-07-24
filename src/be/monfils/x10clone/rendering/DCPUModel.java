@@ -40,6 +40,7 @@ public class DCPUModel {
 		setupDCPU(file);
 
 		screen.setUserData("Keyboard", keyboard.getID());
+		screen.setUserData("DCPU", dcpu.getID());
 	}
 
 	private void setupDCPU(String file) {
@@ -74,7 +75,7 @@ public class DCPUModel {
 
 		screen = new Geometry("Screen", new Quad(2.56f, 1.92f));
 		Material screen_mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-		Texture screen_tex = assetManager.loadTexture("Textures/lem1802/boot_transparent.png");
+		Texture screen_tex = assetManager.loadTexture("Textures/lem1802/boot.png");
 		screen_tex.setMagFilter(Texture.MagFilter.Nearest);
 		screen_mat.setTexture("ColorMap", screen_tex);
 		screen_mat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);

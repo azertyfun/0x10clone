@@ -1,5 +1,6 @@
 package be.monfils.x10clone.rendering;
 
+import be.monfils.x10clone.dcpu.DCPU;
 import be.monfils.x10clone.dcpu.DCPUTickingThread;
 import be.monfils.x10clone.dcpu.GenericKeyboard;
 import be.monfils.x10clone.dcpu.HardwareTracker;
@@ -61,7 +62,7 @@ public class X10clone extends SimpleApplication {
 	public static void main(String args[]) {
 		AppSettings settings = new AppSettings(true);
 		settings.setTitle("0x10clone");
-		settings.setVSync(false);
+		settings.setVSync(true);
 		settings.setWidth(1024);
 		settings.setHeight(768);
 		X10clone app = new X10clone();
@@ -173,9 +174,9 @@ public class X10clone extends SimpleApplication {
 		dcpuScreens = new Node();
 		rootNode.attachChild(dcpuScreens);
 
-		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(2, 1, -7), new Quaternion(), 1.0f, "assets/DCPU/hello_border.bin"));
+		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(2, 1, -7), new Quaternion(), 1.0f, "assets/DCPU/FrOSt.bin"));
 		dcpuScreens.attachChild(dcpus.getLast().getScreen());
-		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(-5, 0.1f, 5), new Quaternion().fromAngleAxis(FastMath.HALF_PI, Vector3f.UNIT_Y), 1.0f, "assets/DCPU/FrOSt.bin"));
+		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(-5, 0.1f, 5), new Quaternion().fromAngleAxis(FastMath.HALF_PI, Vector3f.UNIT_Y), 1.0f, "assets/DCPU/BOLD.bin"));
 		dcpuScreens.attachChild(dcpus.getLast().getScreen());
 	}
 
@@ -187,9 +188,10 @@ public class X10clone extends SimpleApplication {
 		inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
 		inputManager.addMapping("ToggleFlyCam", new KeyTrigger(KeyInput.KEY_RETURN), new KeyTrigger(KeyInput.KEY_NUMPADENTER));
 		inputManager.addMapping("focusDCPU", new KeyTrigger(KeyInput.KEY_TAB));
+		inputManager.addMapping("resetDCPU", new KeyTrigger(KeyInput.KEY_END));
 
 		inputManager.addListener(actionListener, "Forwards", "Backwards", "Left", "Right");
-		inputManager.addListener(actionListener, "ToggleFlyCam", "focusDCPU", "Jump");
+		inputManager.addListener(actionListener, "ToggleFlyCam", "focusDCPU", "resetDCPU", "Jump");
 		flyCam.unregisterInput();
 	}
 
@@ -197,7 +199,7 @@ public class X10clone extends SimpleApplication {
 		@Override
 		public void onAction(String name, boolean pressed, float tpf) {
 			if(name.equals("focusDCPU") && !pressed) {
-				if(!focusedOnDCPU) {
+				if (!focusedOnDCPU) {
 					CollisionResults results = new CollisionResults();
 					Ray ray = new Ray(cam.getLocation(), cam.getDirection());
 					dcpuScreens.collideWith(ray, results);
@@ -212,6 +214,11 @@ public class X10clone extends SimpleApplication {
 					flyCam.setEnabled(true);
 					mouseInput.setCursorVisible(false);
 					focusedOnDCPU = false;
+				}
+			} else if(name.equals("resetDCPU") && focusedOnDCPU && !pressed) {
+				DCPU dcpu = hardwareTracker.getDCPU(focusedDCPU.getUserData("DCPU"));
+				if(dcpu != null) {
+					dcpu.reset();
 				}
 			} else if(name.equals("ToggleFlyCam") && !focusedOnDCPU) {
 				if (!pressed) //on release
