@@ -82,10 +82,10 @@ public class DCPUModel {
 		screen.setMaterial(screen_mat);
 		mainNode.attachChild(screen);
 
-		Spatial crt = assetManager.loadModel("Models/CRT/CRT.obj");
+		Spatial crt = assetManager.loadModel("Models/CRT/CRT.j3o");
 		mainNode.attachChild(crt);
 
-		Spatial kb = assetManager.loadModel("Models/Keyboard/Keyboard.obj");
+		Spatial kb = assetManager.loadModel("Models/Keyboard/Keyboard.j3o");
 		mainNode.attachChild(kb);
 
 		mainNode.scale(scale);
