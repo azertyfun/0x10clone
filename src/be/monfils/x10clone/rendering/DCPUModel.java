@@ -2,6 +2,7 @@ package be.monfils.x10clone.rendering;
 
 import be.monfils.x10clone.dcpu.*;
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
@@ -30,13 +31,14 @@ import java.nio.file.Paths;
 public class DCPUModel {
 
 	private Spatial screen;
-	//private DCPUManager dcpuManager;
-	private Material mat;
+	private AudioNode speakerNodes[][];
 	private DCPU dcpu;
 	private LEM1802 lem1802;
 	private GenericClock clock;
 	private GenericKeyboard keyboard;
+	private VSS1224 vss1224;
 	private PointLight screenLight;
+	private int lastFrequencies[] =  new int[] {0, 0};
 
 	public DCPUModel(BulletAppState appState, AssetManager assetManager, Node node, Vector3f position, Quaternion rotation, float scale, String file) {
 		setupGeometry(appState, assetManager, node, position, rotation, scale);
@@ -57,6 +59,9 @@ public class DCPUModel {
 		keyboard = X10clone.hardwareTracker.requestKeyboard();
 		keyboard.connectTo(dcpu);
 		keyboard.powerOn();
+		vss1224 = X10clone.hardwareTracker.requestVss();
+		vss1224.connectTo(dcpu);
+		vss1224.powerOn();
 
 		try {
 			byte[] ram_b = Files.readAllBytes(Paths.get(file));
@@ -97,6 +102,18 @@ public class DCPUModel {
 		crt.scale(0.5f);
 		kb.scale(0.4f);
 
+		speakerNodes = new AudioNode[2][4];
+		for(int channel = 0; channel < 2; ++channel) {
+			for (int i = 0; i < 4; i++) {
+				speakerNodes[channel][i] = new AudioNode(assetManager, "Sound/Beeps/beep_" + channel + "_" + ((int) Math.pow(2, i)) + "00hz.wav", false);
+				speakerNodes[channel][i].setLocalTranslation(position);
+				speakerNodes[channel][i].setLooping(true);
+				speakerNodes[channel][i].setPositional(true);
+				speakerNodes[channel][i].setVolume(0);
+				speakerNodes[channel][i].play();
+			}
+		}
+
 		screenLight = new PointLight();
 		screenLight.setPosition(position);
 		screenLight.setRadius(4f);
@@ -126,6 +143,50 @@ public class DCPUModel {
 		lem1802.tick60hz();
 		clock.tick60hz();
 		keyboard.tick60hz();
+	}
+
+	public void sound() {
+		int frequencies[] = vss1224.getFrequencies();
+
+		if(frequencies[0] != lastFrequencies[0]) {
+			sound(0, frequencies);
+		}
+
+		if(frequencies[1] != lastFrequencies[1]) {
+			sound(1, frequencies);
+		}
+
+		lastFrequencies[0] = frequencies[0];
+		lastFrequencies[1] = frequencies[1];
+	}
+
+	private void sound(int channel, int[] frequencies) {
+		for(AudioNode n : speakerNodes[channel])
+			n.setVolume(0);
+
+		int i = 0;
+
+		if(frequencies[channel] <= 200)
+			i = 0;
+		else if(frequencies[channel] <= 400)
+			i = 1;
+		else if(frequencies[channel] <= 800)
+			i = 2;
+		else if(frequencies[channel] <= 1600)
+			i = 3;
+
+		if(frequencies[channel] != 0) {
+			speakerNodes[channel][i].setVolume(channel == 0 ? 0.02f : 0.015f);
+			if(frequencies[channel] <= 200) {
+				speakerNodes[channel][i].setPitch((float) frequencies[channel] / 100.0f);
+			} else if(frequencies[0] <= 400) {
+				speakerNodes[channel][i].setPitch((float) frequencies[channel] / 200.0f);
+			} else if(frequencies[0] <= 800) {
+				speakerNodes[channel][i].setPitch((float) frequencies[channel] / 400.0f);
+			} else if(frequencies[0] <= 1600) {
+				speakerNodes[channel][i].setPitch((float) frequencies[channel] / 800.0f);
+			}
+		}
 	}
 
 	public void render(AssetManager assetManager) {

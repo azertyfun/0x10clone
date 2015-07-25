@@ -182,7 +182,7 @@ public class X10clone extends SimpleApplication {
 		dcpuScreens = new Node();
 		rootNode.attachChild(dcpuScreens);
 
-		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(2, 1, -7), new Quaternion(), 1.0f, "assets/DCPU/FrOSt.bin"));
+		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(2, 1, -7), new Quaternion(), 1.0f, "assets/DCPU/stillalive.bin"));
 		dcpuScreens.attachChild(dcpus.getLast().getScreen());
 		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(-5, 0.1f, 5), new Quaternion().fromAngleAxis(FastMath.HALF_PI, Vector3f.UNIT_Y), 1.0f, "assets/DCPU/BOLD.bin"));
 		dcpuScreens.attachChild(dcpus.getLast().getScreen());
@@ -284,6 +284,10 @@ public class X10clone extends SimpleApplication {
 			footSteps[i].setLocalTranslation(playerNode.getLocalTranslation());
 			footSteps[i].playInstance();
 			timeSinceLastStepSound = 0;
+		}
+
+		for(DCPUModel m : dcpus) {
+			m.sound();
 		}
 	}
 

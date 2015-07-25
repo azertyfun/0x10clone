@@ -1,7 +1,6 @@
 package be.monfils.x10clone.dcpu;
 
 import be.monfils.x10clone.rendering.DCPUModel;
-import be.monfils.x10clone.rendering.X10clone;
 import com.jme3.asset.AssetManager;
 
 import java.util.LinkedList;
