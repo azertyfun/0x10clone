@@ -21,7 +21,6 @@ public class LEM1802 extends DCPUHardware {
 	public static final int HEIGHT_PIXELS = 96;
 	private static final int START_DURATION = 60;
 	private static final int BORDER_WIDTH = 4;
-	private int lightColor;
 	private final static int[][][] bootImage = new int[128][96][3];
 	static {
 		try {
@@ -189,6 +188,9 @@ public class LEM1802 extends DCPUHardware {
 				else
 					avg_blue += buffer[i];
 			}
+			avg_red /= (float) buffer.length / 3.0f;
+			avg_green /= (float) buffer.length / 3.0f;
+			avg_blue /= (float) buffer.length / 3.0f;
 			data.put(buffer_b);
 		}
 
@@ -288,7 +290,7 @@ public class LEM1802 extends DCPUHardware {
 
 	@Override
 	public void powerOff() {
-		lightColor = 0;
+		averageColor = new int[] {0, 0, 0};
 		screenMemMap = 0;
 		fontMemMap = 0;
 		paletteMemMap = 0;
