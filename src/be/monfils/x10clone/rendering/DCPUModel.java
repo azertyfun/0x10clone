@@ -6,8 +6,10 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -34,6 +36,7 @@ public class DCPUModel {
 	private LEM1802 lem1802;
 	private GenericClock clock;
 	private GenericKeyboard keyboard;
+	private PointLight screenLight;
 
 	public DCPUModel(BulletAppState appState, AssetManager assetManager, Node node, Vector3f position, Quaternion rotation, float scale, String file) {
 		setupGeometry(appState, assetManager, node, position, rotation, scale);
@@ -94,6 +97,11 @@ public class DCPUModel {
 		crt.scale(0.5f);
 		kb.scale(0.4f);
 
+		screenLight = new PointLight();
+		screenLight.setPosition(position);
+		screenLight.setRadius(4f);
+		node.addLight(screenLight);
+
 		crt.setLocalRotation(rotation);
 		kb.setLocalRotation(rotation);
 		kb.rotate(new Quaternion().fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_Y));
@@ -121,11 +129,16 @@ public class DCPUModel {
 	}
 
 	public void render(AssetManager assetManager) {
-		Texture tex = lem1802.render();
+		lem1802.render();
+		Texture tex = lem1802.getTexture();
+		int[] avgColor = lem1802.getAverageColor();
+
 		Material screenmat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		screenmat.setTexture("ColorMap", tex);
 		screenmat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
 		screen.setMaterial(screenmat);
+
+		screenLight.setColor(new ColorRGBA((float) avgColor[0] / 255.0f, (float) avgColor[1] / 255.0f, (float) avgColor[2] / 255.0f, 255));
 	}
 
 	public void stop() {

@@ -72,14 +72,17 @@ public class LEM1802 extends DCPUHardware {
 
 	private int screenMemMap, fontMemMap, paletteMemMap, startDelay;
 	private char borderColor = 0x0;
+	private Texture texture;
+	private int[] averageColor;
 
 	public LEM1802(String id) {
 		super(TYPE, REVISION, MANUFACTURER);
 		this.id = id;
 	}
 
-	public Texture render() {
+	public void render() {
 		ByteBuffer data = ByteBuffer.allocateDirect((128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 3);
+		int avg_red = 0, avg_green = 0, avg_blue = 0;
 
 		if(screenMemMap != 0 && startDelay == 0) {
 			/*
@@ -143,7 +146,16 @@ public class LEM1802 extends DCPUHardware {
 			byte[] buffer_b = new byte[buffer.length];
 			for(int i = 0; i < buffer.length; ++i) {
 				buffer_b[i] = (byte) buffer[i];
+				if(i % 3 == 0)
+					avg_red += buffer[i];
+				else if(i % 3 == 1)
+					avg_green += buffer[i];
+				else
+					avg_blue += buffer[i];
 			}
+			avg_red /= (float) buffer.length / 3.0f;
+			avg_green /= (float) buffer.length / 3.0f;
+			avg_blue /= (float) buffer.length / 3.0f;
 			data.put(buffer_b);
 		} else {
 			char buffer[] = new char[(128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 3];
@@ -170,14 +182,30 @@ public class LEM1802 extends DCPUHardware {
 			byte[] buffer_b = new byte[buffer.length];
 			for(int i = 0; i < buffer.length; ++i) {
 				buffer_b[i] = (byte) buffer[i];
+				if(i % 3 == 0)
+					avg_red += buffer[i];
+				else if(i % 3 == 1)
+					avg_green += buffer[i];
+				else
+					avg_blue += buffer[i];
 			}
 			data.put(buffer_b);
 		}
 
+		averageColor = new int[] {avg_red, avg_green, avg_blue};
+
 		Texture tex = new Texture2D();
 		tex.setImage(new Image(Image.Format.RGB8, WIDTH_PIXELS + 2 * BORDER_WIDTH, HEIGHT_PIXELS + 2 * BORDER_WIDTH, data));
 		tex.setMagFilter(Texture.MagFilter.Nearest);
-		return tex;
+		texture = tex;
+	}
+
+	public Texture getTexture() {
+		return texture;
+	}
+
+	public int[] getAverageColor() {
+		return averageColor;
 	}
 
 	public void interrupt() {
