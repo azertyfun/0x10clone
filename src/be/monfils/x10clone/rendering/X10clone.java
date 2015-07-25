@@ -5,6 +5,7 @@ import be.monfils.x10clone.dcpu.DCPUTickingThread;
 import be.monfils.x10clone.dcpu.GenericKeyboard;
 import be.monfils.x10clone.dcpu.HardwareTracker;
 import com.jme3.app.SimpleApplication;
+import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.BetterCharacterControl;
@@ -33,11 +34,18 @@ import com.jme3.util.SkyFactory;
 import com.jme3.util.TangentBinormalGenerator;
 
 import java.util.LinkedList;
+import java.util.Random;
 
 /**
  * Created by nathan on 18/07/15.
  */
 public class X10clone extends SimpleApplication {
+
+	private Random random = new Random();
+
+	public static HardwareTracker hardwareTracker = new HardwareTracker();
+	private LinkedList<DCPUModel> dcpus = new LinkedList<>();
+	private DCPUTickingThread dcpuTickingThread;
 
 	private Spatial sceneModel;
 	private Geometry planetGeom;
@@ -45,12 +53,10 @@ public class X10clone extends SimpleApplication {
 	private AmbientLight al;
 	private PointLight pl;
 	private BitmapText hello_text;
-	public static HardwareTracker hardwareTracker = new HardwareTracker();
-	private LinkedList<DCPUModel> dcpus = new LinkedList<>();
-	private DCPUTickingThread dcpuTickingThread;
 	private Node dcpuScreens;
 	private boolean focusedOnDCPU;
 	private Spatial focusedDCPU;
+	private AudioNode footSteps[];
 
 	private BulletAppState bulletAppState;
 	private RigidBodyControl sceneBody;
@@ -58,6 +64,7 @@ public class X10clone extends SimpleApplication {
 	private Node playerNode;
 	private Vector3f walkDirection = new Vector3f(), camDir = new Vector3f(), camLeft = new Vector3f();
 	private boolean forwards, backwards, left, right;
+	private int timeSinceLastStepSound = 0;
 
 	public static void main(String args[]) {
 		AppSettings settings = new AppSettings(true);
@@ -122,6 +129,7 @@ public class X10clone extends SimpleApplication {
 		hello_text.setLocalTranslation(0, settings.getHeight(), 0);
 		guiNode.attachChild(hello_text);
 
+		initAudio();
 		initKeys();
 
 		inputManager.addRawInputListener(new RawInputListener() {
@@ -178,6 +186,15 @@ public class X10clone extends SimpleApplication {
 		dcpuScreens.attachChild(dcpus.getLast().getScreen());
 		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(-5, 0.1f, 5), new Quaternion().fromAngleAxis(FastMath.HALF_PI, Vector3f.UNIT_Y), 1.0f, "assets/DCPU/BOLD.bin"));
 		dcpuScreens.attachChild(dcpus.getLast().getScreen());
+	}
+
+	private void initAudio() {
+		footSteps = new AudioNode[10];
+		for(int i = 0; i < 10; ++i) {
+			footSteps[i] = new AudioNode(assetManager, "Sound/FootSteps/" + i + ".ogg", false);
+			footSteps[i].setPositional(false);
+			footSteps[i].setLooping(false);
+		}
 	}
 
 	private void initKeys() {
@@ -257,6 +274,17 @@ public class X10clone extends SimpleApplication {
 			walkDirection.addLocal(camDir.negate());
 		player.setWalkDirection(walkDirection.multLocal(1, 0, 1));
 		cam.setLocation(playerNode.getLocalTranslation().addLocal(0, 1.5f, 0));
+
+		listener.setLocation(cam.getLocation());
+		listener.setRotation(cam.getRotation());
+
+		timeSinceLastStepSound += (tpf * 1000);
+		if(walkDirection.length() > 0.1f && player.isOnGround() && timeSinceLastStepSound >= 300) {
+			int i = random.nextInt(10);
+			footSteps[i].setLocalTranslation(playerNode.getLocalTranslation());
+			footSteps[i].playInstance();
+			timeSinceLastStepSound = 0;
+		}
 	}
 
 	@Override
