@@ -44,4 +44,8 @@ public class DCPUTickingThread extends Thread {
 			}
 		}
 	}
+
+	public boolean isStopped() {
+		return stopped;
+	}
 }

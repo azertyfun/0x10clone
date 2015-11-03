@@ -1,9 +1,12 @@
 package be.monfils.x10clone.rendering;
 
+import be.monfils.X10clone.constants.Constants;
 import be.monfils.x10clone.dcpu.DCPU;
 import be.monfils.x10clone.dcpu.DCPUTickingThread;
 import be.monfils.x10clone.dcpu.GenericKeyboard;
 import be.monfils.x10clone.dcpu.HardwareTracker;
+import be.monfils.x10clone.messages.MessageChangeUsername;
+import be.monfils.x10clone.networking.ClientListener;
 import com.jme3.app.SimpleApplication;
 import com.jme3.audio.AudioNode;
 import com.jme3.bullet.BulletAppState;
@@ -24,6 +27,11 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.*;
+import com.jme3.network.Client;
+import com.jme3.network.ClientStateListener;
+import com.jme3.network.ErrorListener;
+import com.jme3.network.Network;
+import com.jme3.network.serializing.Serializer;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -33,13 +41,18 @@ import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
 import com.jme3.util.TangentBinormalGenerator;
 
+import java.awt.color.CMMException;
+import java.io.IOException;
+import java.net.ConnectException;
 import java.util.LinkedList;
 import java.util.Random;
 
 /**
  * Created by nathan on 18/07/15.
  */
-public class X10clone extends SimpleApplication {
+public class X10clone extends SimpleApplication implements ErrorListener<Client>, ClientStateListener {
+
+	private Client myClient;
 
 	private Random random = new Random();
 
@@ -66,6 +79,9 @@ public class X10clone extends SimpleApplication {
 	private boolean forwards, backwards, left, right;
 	private int timeSinceLastStepSound = 0;
 
+	private boolean connected;
+	private String username;
+
 	public static void main(String args[]) {
 		AppSettings settings = new AppSettings(true);
 		settings.setTitle("0x10clone");
@@ -80,6 +96,36 @@ public class X10clone extends SimpleApplication {
 
 	@Override
 	public void simpleInitApp() {
+		try {
+			System.out.print("Connecting to the server... ");
+			try {
+				myClient = Network.connectToServer(Constants.GAME_NAME, Constants.GAME_VERSION, "localhost", 47810, 47810);
+			} catch(ConnectException e) {
+				System.err.println("Could not connect : " + e.getLocalizedMessage());
+				stop();
+				destroy();
+				System.exit(-1);
+			}
+
+			myClient.addErrorListener(this);
+			myClient.addClientStateListener(this);
+
+			Serializer.registerClass(MessageChangeUsername.class);
+
+			System.out.print("Connected!\nStarting client... ");
+			myClient.start();
+
+			myClient.addMessageListener(new ClientListener(this), MessageChangeUsername.class);
+
+			MessageChangeUsername messageChangeUsername = new MessageChangeUsername("MyPseudo", false);
+			messageChangeUsername.setReliable(true);
+			myClient.send(messageChangeUsername);
+
+			System.out.println("Client started!");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		rootNode.attachChild(SkyFactory.createSky(assetManager, assetManager.loadTexture("Textures/Sky/Stars/west.png"), assetManager.loadTexture("Textures/Sky/Stars/east.png"), assetManager.loadTexture("Textures/Sky/Stars/north.png"), assetManager.loadTexture("Textures/Sky/Stars/south.png"), assetManager.loadTexture("Textures/Sky/Stars/up.png"), assetManager.loadTexture("Textures/Sky/Stars/down.png")));
 
 		cam.setFrustumPerspective(90, (float) settings.getWidth() / (float) settings.getHeight(), 0.05f, 10000f);
@@ -299,8 +345,38 @@ public class X10clone extends SimpleApplication {
 	@Override
 	public void stop() {
 		super.stop();
-		dcpuTickingThread.setStopped();
+		if(dcpuTickingThread != null && !dcpuTickingThread.isStopped())
+			dcpuTickingThread.setStopped();
 		for(DCPUModel dcpu : dcpus)
 			dcpu.stop();
+	}
+
+	@Override
+	public void destroy() {
+		if(myClient != null && myClient.isConnected())
+			myClient.close();
+		super.destroy();
+	}
+
+	public void setUsername(String username) {
+		System.out.println("Set username to " + username);
+		this.username = username;
+	}
+
+	@Override
+	public void handleError(Client client, Throwable throwable) {
+		System.err.println("Network error: " + throwable.getLocalizedMessage());
+	}
+
+	@Override
+	public void clientConnected(Client client) {
+		System.out.println("Connected to the server!");
+	}
+
+	@Override
+	public void clientDisconnected(Client client, DisconnectInfo disconnectInfo) {
+		System.out.println("Disconnected from the server (reason: " + ((disconnectInfo != null && disconnectInfo.reason != null) ? disconnectInfo.reason : "none given") + ").");
+		stop();
+		System.exit(0);
 	}
 }
