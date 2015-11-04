@@ -1,0 +1,18 @@
+{
+  "files": {"scene": "Scenes/TestScene.j3o", "skybox": "Stars"},
+  "player_position": [0, 10, 0],
+  "lighting" : [
+    {
+      "type": "AmbientLight",
+      "color": [1.0, 1.0, 1.0, 1.0],
+      "color_multiplier": 1.3
+    },
+    {
+      "type": "PointLight",
+      "color": [1.0, 0.9, 0.9, 0.8],
+      "color_multiplier": 1.3,
+      "position": [-5.0, 5.0, -5.0]
+    }
+  ]
+
+}

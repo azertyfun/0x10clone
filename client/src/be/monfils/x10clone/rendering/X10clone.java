@@ -1,11 +1,9 @@
 package be.monfils.x10clone.rendering;
 
-import be.monfils.X10clone.constants.Constants;
-import be.monfils.x10clone.dcpu.DCPU;
-import be.monfils.x10clone.dcpu.DCPUTickingThread;
-import be.monfils.x10clone.dcpu.GenericKeyboard;
-import be.monfils.x10clone.dcpu.HardwareTracker;
-import be.monfils.x10clone.messages.MessageChangeUsername;
+import be.monfils.x10clone.Scene;
+import be.monfils.x10clone.constants.Constants;
+import be.monfils.x10clone.dcpu.*;
+import be.monfils.x10clone.messages.*;
 import be.monfils.x10clone.networking.ClientListener;
 import com.jme3.app.SimpleApplication;
 import com.jme3.audio.AudioNode;
@@ -22,49 +20,40 @@ import com.jme3.input.RawInputListener;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.event.*;
-import com.jme3.light.AmbientLight;
-import com.jme3.light.DirectionalLight;
-import com.jme3.light.PointLight;
-import com.jme3.material.Material;
-import com.jme3.math.*;
+import com.jme3.light.Light;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Ray;
+import com.jme3.math.Vector3f;
 import com.jme3.network.Client;
 import com.jme3.network.ClientStateListener;
-import com.jme3.network.ErrorListener;
 import com.jme3.network.Network;
 import com.jme3.network.serializing.Serializer;
 import com.jme3.renderer.RenderManager;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
-import com.jme3.util.TangentBinormalGenerator;
 
-import java.awt.color.CMMException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * Created by nathan on 18/07/15.
  */
-public class X10clone extends SimpleApplication implements ErrorListener<Client>, ClientStateListener {
+public class X10clone extends SimpleApplication implements ClientStateListener {
 
 	private Client myClient;
 
 	private Random random = new Random();
 
 	public static HardwareTracker hardwareTracker = new HardwareTracker();
-	private LinkedList<DCPUModel> dcpus = new LinkedList<>();
-	private DCPUTickingThread dcpuTickingThread;
+	private LinkedList<DCPUModel> dcpuModels = new LinkedList<>();
 
 	private Spatial sceneModel;
-	private Geometry planetGeom;
-	private DirectionalLight sun;
-	private AmbientLight al;
-	private PointLight pl;
 	private BitmapText hello_text;
 	private Node dcpuScreens;
 	private boolean focusedOnDCPU;
@@ -81,6 +70,9 @@ public class X10clone extends SimpleApplication implements ErrorListener<Client>
 
 	private boolean connected;
 	private String username;
+	private boolean loadingScene = true;
+
+	private ScheduledThreadPoolExecutor executor;
 
 	public static void main(String args[]) {
 		AppSettings settings = new AppSettings(true);
@@ -96,6 +88,21 @@ public class X10clone extends SimpleApplication implements ErrorListener<Client>
 
 	@Override
 	public void simpleInitApp() {
+		cam.setFrustumPerspective(90, (float) settings.getWidth() / (float) settings.getHeight(), 0.05f, 10000f);
+
+		initAudio();
+		initKeys();
+
+		player = new BetterCharacterControl(0.5f, 1.8f, 1);
+		player.setJumpForce(new Vector3f(0.0f, 5.0f, 0.0f));
+
+		playerNode = new Node("Player");
+		playerNode.setLocalTranslation(0, 5, 0);
+		rootNode.attachChild(playerNode);
+		playerNode.addControl(player);
+
+		executor = new ScheduledThreadPoolExecutor(4);
+
 		try {
 			System.out.print("Connecting to the server... ");
 			try {
@@ -107,131 +114,116 @@ public class X10clone extends SimpleApplication implements ErrorListener<Client>
 				System.exit(-1);
 			}
 
-			myClient.addErrorListener(this);
 			myClient.addClientStateListener(this);
 
 			Serializer.registerClass(MessageChangeUsername.class);
-
-			System.out.print("Connected!\nStarting client... ");
-			myClient.start();
+			Serializer.registerClass(MessageLoadScene.class);
+			Serializer.registerClass(MessagePlayerLocation.class);
+			Serializer.registerClass(MessageSpawnDCPU.class);
+			Serializer.registerClass(MessageDCPUScreen.class);
+			Serializer.registerClass(MessageUpdateVSSSound.class);
+			Serializer.registerClass(MessageDCPUKeyCode.class);
+			Serializer.registerClass(MessageResetDCPU.class);
 
 			myClient.addMessageListener(new ClientListener(this), MessageChangeUsername.class);
+			myClient.addMessageListener(new ClientListener(this), MessageLoadScene.class);
+			myClient.addMessageListener(new ClientListener(this), MessagePlayerLocation.class);
+			myClient.addMessageListener(new ClientListener(this), MessageSpawnDCPU.class);
+			myClient.addMessageListener(new ClientListener(this), MessageDCPUScreen.class);
+			myClient.addMessageListener(new ClientListener(this), MessageUpdateVSSSound.class);
+
+			System.out.print("Connected!\nStarting client... ");
+
+			myClient.start();
 
 			MessageChangeUsername messageChangeUsername = new MessageChangeUsername("MyPseudo", false);
-			messageChangeUsername.setReliable(true);
 			myClient.send(messageChangeUsername);
 
 			System.out.println("Client started!");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
 
-		rootNode.attachChild(SkyFactory.createSky(assetManager, assetManager.loadTexture("Textures/Sky/Stars/west.png"), assetManager.loadTexture("Textures/Sky/Stars/east.png"), assetManager.loadTexture("Textures/Sky/Stars/north.png"), assetManager.loadTexture("Textures/Sky/Stars/south.png"), assetManager.loadTexture("Textures/Sky/Stars/up.png"), assetManager.loadTexture("Textures/Sky/Stars/down.png")));
-
-		cam.setFrustumPerspective(90, (float) settings.getWidth() / (float) settings.getHeight(), 0.05f, 10000f);
-
-		bulletAppState = new BulletAppState();
-		stateManager.attach(bulletAppState);
-		sceneModel = assetManager.loadModel("Scenes/TestScene.j3o");
-		CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(sceneModel);
-		sceneBody = new RigidBodyControl(sceneShape, 0);
-		sceneModel.addControl(sceneBody);
-
-		player = new BetterCharacterControl(0.5f, 1.8f, 1);
-		player.setJumpForce(new Vector3f(0.0f, 5.0f, 0.0f));
-
-		playerNode = new Node("Player");
-		playerNode.setLocalTranslation(0, 5, 0);
-		rootNode.attachChild(playerNode);
-		playerNode.addControl(player);
-
-		rootNode.attachChild(sceneModel);
-		bulletAppState.getPhysicsSpace().add(sceneBody);
-		bulletAppState.getPhysicsSpace().add(player);
-
-		setupMeshes();
-
-		dcpuTickingThread = new DCPUTickingThread(dcpus, assetManager);
-		dcpuTickingThread.start();
-
-		/* sun = new DirectionalLight();
-		sun.setDirection(new Vector3f(5f, -5f, -8f));
-		rootNode.addLight(sun); */
-
-		pl = new PointLight();
-		pl.setColor(new ColorRGBA(1f, 0.9f, 0.9f, 0.8f));
-		pl.setPosition(new Vector3f(-5f, 5f, -5f));
-		rootNode.addLight(pl);
-
-		al = new AmbientLight();
-		al.setColor(ColorRGBA.White.mult(1.3f));
-		rootNode.addLight(al);
-
-		guiNode.detachAllChildren();
-		guiFont = assetManager.loadFont("Interface/Fonts/Minecraft.fnt");
-		hello_text = new BitmapText(guiFont);
-		hello_text.setSize(guiFont.getCharSet().getRenderedSize());
-		hello_text.setText("Welcome to 0x10clone !\nPress tab to focus a specific DCPU.");
-		hello_text.setLocalTranslation(0, settings.getHeight(), 0);
-		guiNode.attachChild(hello_text);
-
-		initAudio();
-		initKeys();
-
-		inputManager.addRawInputListener(new RawInputListener() {
+	public void loadScene(Scene scene) {
+		this.enqueue(new Callable<Object>() {
 			@Override
-			public void beginInput() {}
-			@Override
-			public void endInput() {}
-			@Override
-			public void onJoyAxisEvent(JoyAxisEvent joyAxisEvent) {}
-			@Override
-			public void onJoyButtonEvent(JoyButtonEvent joyButtonEvent) {}
-			@Override
-			public void onMouseMotionEvent(MouseMotionEvent mouseMotionEvent) {}
-			@Override
-			public void onMouseButtonEvent(MouseButtonEvent mouseButtonEvent) {}
-			@Override
-			public void onTouchEvent(TouchEvent touchEvent) {}
+			public Object call() throws Exception {
+				rootNode.detachAllChildren();
+				for(Light l : rootNode.getWorldLightList())
+					rootNode.removeLight(l);
+				dcpuModels.clear();
 
-			@Override
-			public void onKeyEvent(KeyInputEvent keyInputEvent) {
-				if(focusedOnDCPU && focusedDCPU != null && !keyInputEvent.isReleased()) { //For an unknown reason, if isRealeased() == true, then getKeyChar() doesn't return a valid character...
-					GenericKeyboard k = hardwareTracker.getKeyboard(focusedDCPU.getUserData("Keyboard"));
-					if(k != null) {
-						if(keyInputEvent.getKeyChar() >= 0x20 && keyInputEvent.getKeyChar() < 0x7F)
-							k.pressedKey(keyInputEvent.getKeyChar());
-						else
-							k.pressedKeyCode(keyInputEvent.getKeyCode());
+				String skybox = scene.getSkybox_file();
+				rootNode.attachChild(SkyFactory.createSky(assetManager, assetManager.loadTexture("Textures/Sky/" + skybox + "/west.png"), assetManager.loadTexture("Textures/Sky/" + skybox + "/east.png"), assetManager.loadTexture("Textures/Sky/" + skybox + "/north.png"), assetManager.loadTexture("Textures/Sky/" + skybox + "/south.png"), assetManager.loadTexture("Textures/Sky/" + skybox + "/up.png"), assetManager.loadTexture("Textures/Sky/" + skybox + "/down.png")));
+
+				bulletAppState = new BulletAppState();
+				stateManager.attach(bulletAppState);
+				sceneModel = assetManager.loadModel(scene.getScene_file());
+				CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(sceneModel);
+				sceneBody = new RigidBodyControl(sceneShape, 0);
+				sceneModel.addControl(sceneBody);
+
+				rootNode.attachChild(sceneModel);
+				bulletAppState.getPhysicsSpace().add(sceneBody);
+				bulletAppState.getPhysicsSpace().add(player);
+
+				dcpuScreens = new Node();
+				rootNode.attachChild(dcpuScreens);
+
+				for(Light light: scene.getLights())
+						rootNode.addLight(light);
+
+				guiNode.detachAllChildren();
+				guiFont = assetManager.loadFont("Interface/Fonts/Minecraft.fnt");
+				hello_text = new BitmapText(guiFont);
+				hello_text.setSize(guiFont.getCharSet().getRenderedSize());
+				hello_text.setText("Welcome to 0x10clone !\nPress tab to focus a specific DCPU.");
+				hello_text.setLocalTranslation(0, settings.getHeight(), 0);
+				guiNode.attachChild(hello_text);
+
+				inputManager.addRawInputListener(new RawInputListener() {
+					@Override
+					public void beginInput() {}
+					@Override
+					public void endInput() {}
+					@Override
+					public void onJoyAxisEvent(JoyAxisEvent joyAxisEvent) {}
+					@Override
+					public void onJoyButtonEvent(JoyButtonEvent joyButtonEvent) {}
+					@Override
+					public void onMouseMotionEvent(MouseMotionEvent mouseMotionEvent) {}
+					@Override
+					public void onMouseButtonEvent(MouseButtonEvent mouseButtonEvent) {}
+					@Override
+					public void onTouchEvent(TouchEvent touchEvent) {}
+
+					@Override
+					public void onKeyEvent(KeyInputEvent keyInputEvent) {
+						if(focusedOnDCPU && focusedDCPU != null && !keyInputEvent.isReleased()) { //For an unknown reason, if isRealeased() == true, then getKeyChar() doesn't return a valid character...
+							if(focusedDCPU.getUserData("id") == null)
+								return;
+
+							int id = focusedDCPU.getUserData("id");
+
+							myClient.send(new MessageDCPUKeyCode(id, keyInputEvent.getKeyChar() >= 0x20 && keyInputEvent.getKeyChar() < 0x7F, (keyInputEvent.getKeyChar() >= 0x20 && keyInputEvent.getKeyChar() < 0x7F) ? keyInputEvent.getKeyChar() : keyInputEvent.getKeyCode()));
+						}
 					}
-				}
+				});
+
+				rootNode.attachChild(playerNode);
+
+				loadingScene = false;
+				System.out.println("Scene loaded!");
+
+				return null;
 			}
 		});
 	}
 
-	private void setupMeshes() {
-		Sphere planetMesh = new Sphere(32, 32, 64);
-		planetGeom = new Geometry("Planet", planetMesh);
-		planetMesh.setTextureMode(Sphere.TextureMode.Projected);
-		TangentBinormalGenerator.generate(planetMesh);
-		Material planetMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-		planetMat.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Planet/planet_colormap.png"));
-		planetMat.setTexture("NormalMap", assetManager.loadTexture("Textures/Planet/planet_normalmap.png"));
-		planetMat.setBoolean("UseMaterialColors", true);
-		planetMat.setColor("Diffuse", ColorRGBA.White);
-		planetMat.setColor("Specular", ColorRGBA.DarkGray);
-		planetMat.setFloat("Shininess", 16f);
-		planetGeom.setMaterial(planetMat);
-		planetGeom.setLocalTranslation(1000, 30, -1000);
-		rootNode.attachChild(planetGeom);
-
-		dcpuScreens = new Node();
-		rootNode.attachChild(dcpuScreens);
-
-		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(2, 1, -7), new Quaternion(), 1.0f, "assets/DCPU/stillalive.bin"));
-		dcpuScreens.attachChild(dcpus.getLast().getScreen());
-		dcpus.add(new DCPUModel(bulletAppState, assetManager, rootNode, new Vector3f(-5, 0.1f, 5), new Quaternion().fromAngleAxis(FastMath.HALF_PI, Vector3f.UNIT_Y), 1.0f, "assets/DCPU/BOLD.bin"));
-		dcpuScreens.attachChild(dcpus.getLast().getScreen());
+	public void addDCPU(Vector3f position, Quaternion rotation, float scale, int id) {
+		dcpuModels.add(new DCPUModel(id, null, hardwareTracker, bulletAppState, assetManager, rootNode, position, rotation, scale, hardwareTracker.requestLem()));
+		dcpuScreens.attachChild(dcpuModels.getLast().getScreen());
 	}
 
 	private void initAudio() {
@@ -268,10 +260,12 @@ public class X10clone extends SimpleApplication implements ErrorListener<Client>
 					dcpuScreens.collideWith(ray, results);
 					if (results.size() > 0) {
 						CollisionResult closest = results.getClosestCollision();
-						focusedOnDCPU = true;
-						focusedDCPU = closest.getGeometry();
-						flyCam.setEnabled(false);
-						mouseInput.setCursorVisible(true);
+						if(closest.getDistance() <= 5) {
+							focusedOnDCPU = true;
+							focusedDCPU = closest.getGeometry();
+							flyCam.setEnabled(false);
+							mouseInput.setCursorVisible(true);
+						}
 					}
 				} else {
 					flyCam.setEnabled(true);
@@ -279,10 +273,11 @@ public class X10clone extends SimpleApplication implements ErrorListener<Client>
 					focusedOnDCPU = false;
 				}
 			} else if(name.equals("resetDCPU") && focusedOnDCPU && !pressed) {
-				DCPU dcpu = hardwareTracker.getDCPU(focusedDCPU.getUserData("DCPU"));
-				if(dcpu != null) {
-					dcpu.reset();
-				}
+				if(focusedDCPU.getUserData("id") == null)
+					return;
+
+				int id = focusedDCPU.getUserData("id");
+				myClient.send(new MessageResetDCPU(id));
 			} else if(name.equals("ToggleFlyCam") && !focusedOnDCPU) {
 				if (!pressed) //on release
 					flyCam.setEnabled(!flyCam.isEnabled());
@@ -332,23 +327,25 @@ public class X10clone extends SimpleApplication implements ErrorListener<Client>
 			timeSinceLastStepSound = 0;
 		}
 
-		for(DCPUModel m : dcpus) {
+		for(DCPUModel m : dcpuModels) {
 			m.sound();
 		}
+
+		MessagePlayerLocation messagePlayerLocation = new MessagePlayerLocation(playerNode.getLocalTranslation());
+		messagePlayerLocation.setReliable(false);
+		myClient.send(messagePlayerLocation);
 	}
 
 	@Override
 	public void simpleRender(RenderManager rm) {
 		super.simpleRender(rm);
+		for(DCPUModel m : dcpuModels)
+			m.render(assetManager);
 	}
 
 	@Override
 	public void stop() {
 		super.stop();
-		if(dcpuTickingThread != null && !dcpuTickingThread.isStopped())
-			dcpuTickingThread.setStopped();
-		for(DCPUModel dcpu : dcpus)
-			dcpu.stop();
 	}
 
 	@Override
@@ -356,16 +353,12 @@ public class X10clone extends SimpleApplication implements ErrorListener<Client>
 		if(myClient != null && myClient.isConnected())
 			myClient.close();
 		super.destroy();
+		executor.shutdown();
 	}
 
 	public void setUsername(String username) {
 		System.out.println("Set username to " + username);
 		this.username = username;
-	}
-
-	@Override
-	public void handleError(Client client, Throwable throwable) {
-		System.err.println("Network error: " + throwable.getLocalizedMessage());
 	}
 
 	@Override
@@ -378,5 +371,27 @@ public class X10clone extends SimpleApplication implements ErrorListener<Client>
 		System.out.println("Disconnected from the server (reason: " + ((disconnectInfo != null && disconnectInfo.reason != null) ? disconnectInfo.reason : "none given") + ").");
 		stop();
 		System.exit(0);
+	}
+
+	public void setPlayerPosition(Vector3f playerPosition) {
+		enqueue(new Callable<Object>() {
+			@Override
+			public Object call() throws Exception {
+				playerNode.setLocalTranslation(playerPosition);
+				return null;
+			}
+		});
+	}
+
+	public boolean isLoadingScene() {
+		return loadingScene;
+	}
+
+	public void setLoadingScene(boolean loadingScene) {
+		this.loadingScene = loadingScene;
+	}
+
+	public LinkedList<DCPUModel> getDcpuModels() {
+		return dcpuModels;
 	}
 }

@@ -19,12 +19,12 @@ public class LEM1802 extends DCPUHardware {
 	public static final int TYPE = 0x7349f615, REVISION = 0x1802, MANUFACTURER = 0x1c6c8b36;
 	public static final int WIDTH_PIXELS = 128;
 	public static final int HEIGHT_PIXELS = 96;
-	private static final int START_DURATION = 60;
-	private static final int BORDER_WIDTH = 4;
+	public static final int START_DURATION = 60;
+	public static final int BORDER_WIDTH = 4;
 	private final static int[][][] bootImage = new int[128][96][3];
 	static {
 		try {
-			BufferedImage image = ImageIO.read(new File("assets/Textures/lem1802/boot.png"));
+			BufferedImage image = ImageIO.read(new File("util/assets/Textures/lem1802/boot.png"));
 			byte[] bootImage_raw = ((DataBufferByte) image.getData().getDataBuffer()).getData();
 			int pos = 0;
 			for(int y = 0; y < 96; ++y) {
@@ -73,6 +73,10 @@ public class LEM1802 extends DCPUHardware {
 	private char borderColor = 0x0;
 	private Texture texture;
 	private int[] averageColor;
+	private char[] videoRam;
+	private char[] fontRam;
+	private char[] paletteRam;
+	private boolean useGivenBuffers = false;
 
 	public LEM1802(String id) {
 		super(TYPE, REVISION, MANUFACTURER);
@@ -83,7 +87,7 @@ public class LEM1802 extends DCPUHardware {
 		ByteBuffer data = ByteBuffer.allocateDirect((128 + 2 * BORDER_WIDTH) * (96 + 2 * BORDER_WIDTH) * 3);
 		int avg_red = 0, avg_green = 0, avg_blue = 0;
 
-		if(screenMemMap != 0 && startDelay == 0) {
+		if((screenMemMap != 0 || useGivenBuffers) && startDelay == 0) {
 			/*
 			 * This ram to texture algorithm is heavily inspired from mappum's in his javascript emulator. Check it out there : https://github.com/mappum/DCPU-16/blob/master/lib/LEM1802.js
 			 */
@@ -92,11 +96,23 @@ public class LEM1802 extends DCPUHardware {
 			int pos = 0;
 			for(int y = 0; y < 12; ++y) {
 				for(int x = 0; x < 32; ++x) {
-					if(dcpu.ram[(screenMemMap + pos) & 0xFFFF] != 0) {
-						char fgCol = (char) ((dcpu.ram[(screenMemMap + pos) & 0xFFFF] & 0xF000) >> 12);
-						char bgCol = (char) ((dcpu.ram[(screenMemMap + pos) & 0xFFFF] & 0xF00) >> 8);
-						boolean blink = ((dcpu.ram[(screenMemMap + pos & 0xFFFF)] & 0x80) >> 7) == 1;
-						char character = (char) (dcpu.ram[(screenMemMap + pos) & 0xFFFF] & 0x7F);
+					if((useGivenBuffers && videoRam[pos & 0xFFFF] != 0) || (!useGivenBuffers && dcpu.ram[(screenMemMap + pos) & 0xFFFF] != 0)) {
+						char fgCol;
+						char bgCol;
+						boolean blink;
+						char character;
+						if(!useGivenBuffers) {
+							fgCol = (char) ((dcpu.ram[(screenMemMap + pos) & 0xFFFF] & 0xF000) >> 12);
+							bgCol = (char) ((dcpu.ram[(screenMemMap + pos) & 0xFFFF] & 0xF00) >> 8);
+							blink = ((dcpu.ram[(screenMemMap + pos & 0xFFFF)] & 0x80) >> 7) == 1;
+							character = (char) (dcpu.ram[(screenMemMap + pos) & 0xFFFF] & 0x7F);
+						} else {
+							fgCol = (char) ((videoRam[(pos) & 0xFFFF] & 0xF000) >> 12);
+							bgCol = (char) ((videoRam[(pos) & 0xFFFF] & 0xF00) >> 8);
+							blink = ((videoRam[(pos & 0xFFFF)] & 0x80) >> 7) == 1;
+							character = (char) (videoRam[pos & 0xFFFF] & 0x7F);
+						}
+
 						char fontChar[] = new char[] {font(character * 2), font(character * 2 + 1)};
 
 						if(!blink || !blinkOn) {
@@ -249,16 +265,22 @@ public class LEM1802 extends DCPUHardware {
 	}
 
 	protected char palette(int col) {
+		if(useGivenBuffers)
+			return paletteRam[col];
+
 		if(paletteMemMap == 0) {
-			return defaultPalette[col];
+			return defaultPalette[col & 0xF];
 		} else {
 			return dcpu.ram[paletteMemMap + col];
 		}
 	}
 
 	protected char font(int f) {
+		if(useGivenBuffers)
+			return fontRam[f];
+
 		if(fontMemMap == 0) {
-			return defaultFont[f];
+			return defaultFont[f & 0xFF];
 		} else {
 			return dcpu.ram[fontMemMap + f];
 		}
@@ -302,4 +324,52 @@ public class LEM1802 extends DCPUHardware {
 	public void powerOn() {
 	}
 
+	public char[] getVideoRam() {
+		char ram[] = new char[384];
+		for(int i = 0; i < 384; ++i) {
+			if(screenMemMap != 0)
+				ram[i] = dcpu.ram[screenMemMap + i];
+			else
+				ram[i] = 0;
+		}
+		return ram;
+	}
+
+	public char[] getFontRam() {
+		char fontRam[] = new char[256];
+		for(int i = 0; i < 256; ++i) {
+			if(fontMemMap != 0)
+				fontRam[i] = dcpu.ram[fontMemMap + i];
+			else
+				fontRam[i] = defaultFont[i];
+		}
+		return fontRam;
+	}
+
+	public char[] getPaletteRam() {
+		char paletteRam[] = new char[16];
+		for(int i = 0; i < 16; ++i) {
+			if(paletteMemMap != 0)
+				paletteRam[i] = dcpu.ram[paletteMemMap + i];
+			else
+				paletteRam[i] = defaultPalette[i];
+		}
+		return paletteRam;
+	}
+
+	public void setUseGivenBuffers(boolean useGivenBuffers) {
+		this.useGivenBuffers = useGivenBuffers;
+	}
+
+	public void setVideoRam(char[] videoRam) {
+		this.videoRam = videoRam;
+	}
+
+	public void setFontRam(char[] fontRam) {
+		this.fontRam = fontRam;
+	}
+
+	public void setPaletteRam(char[] paletteRam) {
+		this.paletteRam = paletteRam;
+	}
 }

@@ -1,4 +1,4 @@
-package be.monfils.X10clone.constants;
+package be.monfils.x10clone.constants;
 
 /**
  * Created by nathan on 3/11/15.
