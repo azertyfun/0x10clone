@@ -67,6 +67,7 @@ public class X10cloneServer extends SimpleApplication implements ConnectionListe
 			Serializer.registerClass(MessageUpdateVSSSound.class);
 			Serializer.registerClass(MessageDCPUKeyCode.class);
 			Serializer.registerClass(MessageResetDCPU.class);
+			Serializer.registerClass(MessageSpawnPlayer.class);
 
 			myServer.addMessageListener(new ServerListener(this), MessageChangeUsername.class);
 			myServer.addMessageListener(new ServerListener(this), MessagePlayerLocation.class);
@@ -113,6 +114,21 @@ public class X10cloneServer extends SimpleApplication implements ConnectionListe
 	}
 
 	@Override
+	public void simpleUpdate(float tpf) {
+		super.simpleUpdate(tpf);
+
+		for(HostedConnection hostedConnection : myServer.getConnections()) {
+			for(HostedConnection otherHostedConnection : myServer.getConnections()) {
+				if(hostedConnection.getId() != otherHostedConnection.getId() && otherHostedConnection.getAttribute("node") != null) {
+					MessagePlayerLocation messagePlayerLocation = new MessagePlayerLocation(otherHostedConnection.getId(), ((Node) otherHostedConnection.getAttribute("node")).getLocalTranslation(), ((Node) otherHostedConnection.getAttribute("node")).getWorldRotation());
+					messagePlayerLocation.setReliable(false);
+					hostedConnection.send(messagePlayerLocation);
+				}
+			}
+		}
+	}
+
+	@Override
 	public void connectionAdded(Server server, HostedConnection hostedConnection) {
 		System.out.println("Connection from " + hostedConnection.getAddress() + " (id " + hostedConnection.getId() + ").");
 		hostedConnection.setAttribute("ip_address", hostedConnection.getAddress());
@@ -139,10 +155,23 @@ public class X10cloneServer extends SimpleApplication implements ConnectionListe
 		for(DCPUModel dcpuModel : dcpuModels) {
 			hostedConnection.send(new MessageSpawnDCPU(dcpuModel.getPosition(), dcpuModel.getRotation(), dcpuModel.getScale(), dcpuModel.getId()));
 		}
+
+		for(HostedConnection otherPlayer : myServer.getConnections()) {
+			if(otherPlayer.getId() != hostedConnection.getId() && otherPlayer.getAttribute("node") != null) {
+				hostedConnection.send(new MessageSpawnPlayer(otherPlayer.getId(), ((Node) otherPlayer.getAttribute("node")).getLocalTranslation(), false));
+				otherPlayer.send(new MessageSpawnPlayer(hostedConnection.getId(), ((Node) hostedConnection.getAttribute("node")).getLocalTranslation(), false));
+			}
+		}
 	}
 
 	@Override
 	public void connectionRemoved(Server server, HostedConnection hostedConnection) {
+		for(HostedConnection otherPlayer : myServer.getConnections()) {
+			if(otherPlayer.getId() != hostedConnection.getId()) {
+				otherPlayer.send(new MessageSpawnPlayer(hostedConnection.getId(), new Vector3f(), true));
+			}
+		}
+
 		System.out.println("Disconnection from " + hostedConnection.getAttribute("ip_address") + " (id " + hostedConnection.getId() + ").");
 	}
 

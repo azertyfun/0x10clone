@@ -51,8 +51,7 @@ public class ClientListener implements MessageListener<Client> {
 			}
 
 			MessagePlayerLocation messagePlayerLocation = (MessagePlayerLocation) message;
-			this.client.setPlayerPosition(messagePlayerLocation.getPosition());
-			System.out.println("Setting player position to " + messagePlayerLocation.getPosition() + "...");
+			this.client.setPlayerPosition(messagePlayerLocation.getId(), messagePlayerLocation.getPosition(), messagePlayerLocation.getRotation());
 		} else if(message instanceof MessageSpawnDCPU) {
 			while(this.client.isLoadingScene()) {
 				try {
@@ -121,6 +120,20 @@ public class ClientListener implements MessageListener<Client> {
 					break;
 				}
 			}
+		} else if(message instanceof MessageSpawnPlayer) {
+			while(this.client.isLoadingScene()) {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
+			MessageSpawnPlayer messageSpawnPlayer = (MessageSpawnPlayer) message;
+			if(messageSpawnPlayer.isRemoval())
+				this.client.removePlayer(messageSpawnPlayer.getId());
+			else
+				this.client.addPlayer(messageSpawnPlayer.getId(), messageSpawnPlayer.getPosition());
 		}
 	}
 }

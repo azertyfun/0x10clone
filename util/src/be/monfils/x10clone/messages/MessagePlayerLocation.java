@@ -1,5 +1,6 @@
 package be.monfils.x10clone.messages;
 
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
@@ -10,19 +11,32 @@ import com.jme3.network.serializing.Serializable;
 
 @Serializable
 public class MessagePlayerLocation extends AbstractMessage {
-	Vector3f position;
+	private int id;
+	private Vector3f position;
+	private Quaternion rotation;
 
 	public MessagePlayerLocation() {
 		super(true); //Server -> client must be reliable, but the client should set it to false
 		position = new Vector3f();
+		rotation = new Quaternion();
 	}
 
-	public MessagePlayerLocation(Vector3f position) {
+	public MessagePlayerLocation(int id, Vector3f position, Quaternion rotation) {
 		super(true); //Server -> client must be reliable, but the client should set it to false
+		this.id = id;
 		this.position = position;
+		this.rotation = rotation;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	public Vector3f getPosition() {
 		return position;
+	}
+
+	public Quaternion getRotation() {
+		return rotation;
 	}
 }

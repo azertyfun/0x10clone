@@ -38,6 +38,7 @@ public class ServerListener implements MessageListener<HostedConnection> {
 					if(node_ != null) {
 						Node node = (Node) node_;
 						node.setLocalTranslation(messagePlayerLocation.getPosition());
+						node.setLocalRotation(messagePlayerLocation.getRotation());
 					}
 					break;
 				}

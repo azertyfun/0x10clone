@@ -22,6 +22,8 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.event.*;
 import com.jme3.light.Light;
+import com.jme3.material.Material;
+import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
@@ -74,6 +76,7 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 	private boolean loadingScene = true;
 
 	private ScheduledThreadPoolExecutor executor;
+	private LinkedList<Spatial> players = new LinkedList<>();
 
 	public static void main(String args[]) {
 		AppSettings settings = new AppSettings(true);
@@ -127,6 +130,7 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 			Serializer.registerClass(MessageUpdateVSSSound.class);
 			Serializer.registerClass(MessageDCPUKeyCode.class);
 			Serializer.registerClass(MessageResetDCPU.class);
+			Serializer.registerClass(MessageSpawnPlayer.class);
 
 			myClient.addMessageListener(new ClientListener(this), MessageChangeUsername.class);
 			myClient.addMessageListener(new ClientListener(this), MessageLoadScene.class);
@@ -134,6 +138,7 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 			myClient.addMessageListener(new ClientListener(this), MessageSpawnDCPU.class);
 			myClient.addMessageListener(new ClientListener(this), MessageDCPUScreen.class);
 			myClient.addMessageListener(new ClientListener(this), MessageUpdateVSSSound.class);
+			myClient.addMessageListener(new ClientListener(this), MessageSpawnPlayer.class);
 
 			System.out.print("Connected!\nStarting client... ");
 
@@ -334,7 +339,9 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 			m.sound();
 		}
 
-		MessagePlayerLocation messagePlayerLocation = new MessagePlayerLocation(playerNode.getLocalTranslation());
+		Quaternion rotation = new Quaternion();
+		rotation.lookAt(camDir.setY(0), new Vector3f(0, 1, 0));
+		MessagePlayerLocation messagePlayerLocation = new MessagePlayerLocation(myClient.getId(), playerNode.getLocalTranslation(), rotation);
 		messagePlayerLocation.setReliable(false);
 		myClient.send(messagePlayerLocation);
 	}
@@ -376,11 +383,23 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 		System.exit(0);
 	}
 
-	public void setPlayerPosition(Vector3f playerPosition) {
+	public void setPlayerPosition(int id, Vector3f position, Quaternion rotation) {
 		enqueue(new Callable<Object>() {
 			@Override
 			public Object call() throws Exception {
-				playerNode.setLocalTranslation(playerPosition);
+				if(id == myClient.getId()) {
+					playerNode.setLocalTranslation(position);
+					playerNode.setLocalRotation(rotation);
+				}
+				else {
+					for(Spatial player : players) {
+						if(player.getUserData("id") != null && (int) player.getUserData("id") == id) {
+							player.setLocalTranslation(position);
+							player.setLocalRotation(rotation);
+							break;
+						}
+					}
+				}
 				return null;
 			}
 		});
@@ -396,5 +415,24 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 
 	public LinkedList<DCPUModel> getDcpuModels() {
 		return dcpuModels;
+	}
+
+	public void addPlayer(int id, Vector3f position) {
+		Spatial spatial = assetManager.loadModel("Models/Character/Character.j3o");
+		Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+		spatial.setMaterial(mat);
+		spatial.setUserData("id", id);
+		spatial.setLocalTranslation(position);
+		players.add(spatial);
+		rootNode.attachChild(spatial);
+	}
+
+	public void removePlayer(int id) {
+		for(Spatial s : players) {
+			if((int) s.getUserData("id") == id) {
+				rootNode.detachChild(s);
+				players.remove(s);
+			}
+		}
 	}
 }
