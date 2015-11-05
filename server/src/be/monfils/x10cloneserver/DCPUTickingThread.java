@@ -38,7 +38,7 @@ public class DCPUTickingThread extends Thread {
 					dcpuModel.render(assetManager);
 					for(HostedConnection client : server.getClients()) {
 						try {
-							client.send(new MessageDCPUScreen(dcpuModel.getId(), dcpuModel.getVideoRam(), dcpuModel.getPaletteRam(), dcpuModel.getFontRam()));
+							client.send(new MessageDCPUScreen(dcpuModel.getId(), dcpuModel.getBorderColor(), dcpuModel.getVideoRam(), dcpuModel.getPaletteRam(), dcpuModel.getFontRam()));
 						} catch(KernelException e) {
 							System.err.println("Could not send screen info to client because UDP endpoint is disconnected.\nError message: " + e.getLocalizedMessage());
 						}

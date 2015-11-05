@@ -2,7 +2,8 @@ package be.monfils.x10clone.rendering;
 
 import be.monfils.x10clone.Scene;
 import be.monfils.x10clone.constants.Constants;
-import be.monfils.x10clone.dcpu.*;
+import be.monfils.x10clone.dcpu.DCPUModel;
+import be.monfils.x10clone.dcpu.HardwareTracker;
 import be.monfils.x10clone.messages.*;
 import be.monfils.x10clone.networking.ClientListener;
 import com.jme3.app.SimpleApplication;
@@ -88,6 +89,8 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 
 	@Override
 	public void simpleInitApp() {
+		setPauseOnLostFocus(false);
+
 		cam.setFrustumPerspective(90, (float) settings.getWidth() / (float) settings.getHeight(), 0.05f, 10000f);
 
 		initAudio();

@@ -372,4 +372,12 @@ public class LEM1802 extends DCPUHardware {
 	public void setPaletteRam(char[] paletteRam) {
 		this.paletteRam = paletteRam;
 	}
+
+	public char getBorderColor() {
+		return borderColor;
+	}
+
+	public void setBorderColor(char borderColor) {
+		this.borderColor = borderColor;
+	}
 }

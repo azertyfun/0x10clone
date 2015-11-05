@@ -9,10 +9,11 @@ import com.jme3.network.serializing.Serializable;
 
 @Serializable
 public class MessageDCPUScreen extends AbstractMessage {
+	private int id;
+	private char borderColor;
 	private char[] fontRam;
 	private char[] paletteRam;
 	char[] videoRam;
-	private int id;
 
 	public MessageDCPUScreen() {
 		super(false);
@@ -23,10 +24,11 @@ public class MessageDCPUScreen extends AbstractMessage {
 		id = 0;
 	}
 
-	public MessageDCPUScreen(int id, char[] videoRam, char[] paletteRam, char[] fontRam) {
+	public MessageDCPUScreen(int id, char borderColor, char[] videoRam, char[] paletteRam, char[] fontRam) {
 		super(false); //TODO : Check if it works with a lot of network problems
 
 		this.id = id;
+		this.borderColor = borderColor;
 		this.videoRam = videoRam;
 		this.paletteRam = paletteRam;
 		this.fontRam = fontRam;
@@ -34,6 +36,10 @@ public class MessageDCPUScreen extends AbstractMessage {
 
 	public int getId() {
 		return id;
+	}
+
+	public char getBorderColor() {
+		return borderColor;
 	}
 
 	public char[] getFontRam() {

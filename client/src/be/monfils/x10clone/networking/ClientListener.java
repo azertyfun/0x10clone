@@ -93,6 +93,7 @@ public class ClientListener implements MessageListener<Client> {
 					dcpuModel.setVideoRam(messageDCPUScreen.getVideoRam());
 					dcpuModel.setFontRam(messageDCPUScreen.getFontRam());
 					dcpuModel.setPaletteRam(messageDCPUScreen.getPaletteRam());
+					dcpuModel.setBorderColor(messageDCPUScreen.getBorderColor());
 					dcpuModel.setUseGivenBuffers(true);
 					break;
 				}

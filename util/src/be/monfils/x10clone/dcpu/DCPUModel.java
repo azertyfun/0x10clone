@@ -369,4 +369,12 @@ public class DCPUModel {
 	public DCPU getDcpu() {
 		return dcpu;
 	}
+
+	public char getBorderColor() {
+		return lem1802.getBorderColor();
+	}
+
+	public void setBorderColor(char borderColor) {
+		lem1802.setBorderColor(borderColor);
+	}
 }
