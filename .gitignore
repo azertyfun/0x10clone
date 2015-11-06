@@ -1,5 +1,6 @@
 /out/
 /lib/
+*.so
 
 # Created by https://www.gitignore.io
 
