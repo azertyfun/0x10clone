@@ -1,6 +1,6 @@
 package be.monfils.x10cloneserver;
 
-import be.monfils.x10clone.Scene;
+import be.monfils.x10clone.SceneDescriptor;
 import be.monfils.x10clone.constants.Constants;
 import be.monfils.x10clone.dcpu.DCPUModel;
 import be.monfils.x10clone.dcpu.HardwareTracker;
@@ -46,7 +46,7 @@ public class X10cloneServer extends SimpleApplication implements ConnectionListe
 	private BulletAppState bulletAppState;
 	private RigidBodyControl sceneBody;
 
-	private Scene scene;
+	private SceneDescriptor sceneDescriptor;
 
 	public static void main(String args[]) {
 		X10cloneServer app = new X10cloneServer();
@@ -85,11 +85,11 @@ public class X10cloneServer extends SimpleApplication implements ConnectionListe
 		}
 
 		try {
-			scene = Scene.loadJSON("util/assets/Scenes/TestScene.json");
+			sceneDescriptor = SceneDescriptor.loadJSON("util/assets/Scenes/TestScene.json");
 
 			bulletAppState = new BulletAppState();
 			stateManager.attach(bulletAppState);
-			sceneModel = assetManager.loadModel(scene.getScene_file());
+			sceneModel = assetManager.loadModel(sceneDescriptor.getScene_file());
 			CollisionShape sceneShape = CollisionShapeFactory.createMeshShape(sceneModel);
 			sceneBody = new RigidBodyControl(sceneShape, 0);
 			sceneModel.addControl(sceneBody);
@@ -145,7 +145,7 @@ public class X10cloneServer extends SimpleApplication implements ConnectionListe
 		hostedConnection.setAttribute("player", player);
 
 		Node playerNode = new Node("Player");
-		playerNode.setLocalTranslation(scene.getPlayer_position());
+		playerNode.setLocalTranslation(sceneDescriptor.getPlayer_position());
 		rootNode.attachChild(playerNode);
 		playerNode.addControl(player);
 		hostedConnection.setAttribute("node", playerNode);

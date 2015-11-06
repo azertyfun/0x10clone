@@ -1,6 +1,6 @@
 package be.monfils.x10clone.networking;
 
-import be.monfils.x10clone.Scene;
+import be.monfils.x10clone.SceneDescriptor;
 import be.monfils.x10clone.dcpu.DCPUModel;
 import be.monfils.x10clone.messages.*;
 import be.monfils.x10clone.rendering.X10clone;
@@ -35,7 +35,7 @@ public class ClientListener implements MessageListener<Client> {
 			MessageLoadScene messageLoadScene = (MessageLoadScene) message;
 			this.client.setLoadingScene(true);
 			try {
-				this.client.loadScene(Scene.loadJSON(messageLoadScene.getScene_json()));
+				this.client.loadScene(SceneDescriptor.loadJSON(messageLoadScene.getScene_json()));
 			} catch (IOException e) {
 				e.printStackTrace();
 				System.exit(-1);

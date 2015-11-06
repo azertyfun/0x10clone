@@ -17,7 +17,7 @@ import java.util.LinkedList;
 /**
  * Created by nathan on 3/11/15.
  */
-public class Scene {
+public class SceneDescriptor {
 
 	private Vector3f player_position;
 	private LinkedList<Light> lights;
@@ -39,8 +39,8 @@ public class Scene {
 		return skybox_file;
 	}
 
-	public static Scene loadJSON(String path) throws IOException {
-		Scene s = new Scene();
+	public static SceneDescriptor loadJSON(String path) throws IOException {
+		SceneDescriptor s = new SceneDescriptor();
 
 		String file = new String(Files.readAllBytes(Paths.get(path)));
 		JSONObject scene_json = new JSONObject(file);
