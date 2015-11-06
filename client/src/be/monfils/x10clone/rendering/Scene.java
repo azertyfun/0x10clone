@@ -34,6 +34,7 @@ import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
+import com.jme3.ui.Picture;
 import com.jme3.util.SkyFactory;
 
 import java.util.LinkedList;
@@ -144,12 +145,21 @@ public class Scene {
 			rootNode.addLight(light);
 
 		guiNode.detachAllChildren();
+
 		guiFont = assetManager.loadFont("Interface/Fonts/Minecraft.fnt");
 		hello_text = new BitmapText(guiFont);
 		hello_text.setSize(guiFont.getCharSet().getRenderedSize());
 		hello_text.setText("Welcome to 0x10clone !\nPress tab to focus a specific DCPU.");
 		hello_text.setLocalTranslation(0, appSettings.getHeight(), 0);
 		guiNode.attachChild(hello_text);
+
+		Picture crosshair = new Picture("Crosshair");
+		crosshair.setImage(assetManager, "Interface/icons/crosshair.png", true);
+		crosshair.setWidth(16);
+		crosshair.setHeight(16);
+		crosshair.setPosition(cam.getWidth() / 2 - 8, cam.getHeight() / 2 - 8);
+		guiNode.attachChild(crosshair);
+		System.out.println(cam.getHeight());
 
 		inputManager.addRawInputListener(new RawInputListener() {
 			@Override

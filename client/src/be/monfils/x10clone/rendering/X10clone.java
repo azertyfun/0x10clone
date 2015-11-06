@@ -50,6 +50,8 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 	@Override
 	public void simpleInitApp() {
 		setPauseOnLostFocus(false);
+		setDisplayStatView(false);
+		setDisplayFps(false);
 
 		cam.setFrustumPerspective(90, (float) settings.getWidth() / (float) settings.getHeight(), 0.05f, 10000f);
 
