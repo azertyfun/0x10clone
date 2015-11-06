@@ -159,7 +159,6 @@ public class Scene {
 		crosshair.setHeight(16);
 		crosshair.setPosition(cam.getWidth() / 2 - 8, cam.getHeight() / 2 - 8);
 		guiNode.attachChild(crosshair);
-		System.out.println(cam.getHeight());
 
 		inputManager.addRawInputListener(new RawInputListener() {
 			@Override
