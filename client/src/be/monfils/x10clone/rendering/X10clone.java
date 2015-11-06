@@ -32,7 +32,6 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 
 	private boolean connected;
 	private String username;
-	private boolean loadingScene = true;
 
 	private Scene scene;
 
@@ -106,7 +105,6 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 			public Object call() throws Exception {
 				scene = new Scene(rootNode, guiNode, assetManager, inputManager, settings, sceneDescriptor, stateManager, listener, myClient, cam, flyCam, mouseInput);
 				scene.load();
-				loadingScene = false;
 
 				return null;
 			}
@@ -208,10 +206,6 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 
 	public boolean isLoadingScene() {
 		return scene == null || !scene.isLoaded();
-	}
-
-	public void setLoadingScene(boolean loadingScene) {
-		this.loadingScene = loadingScene;
 	}
 
 	public LinkedList<DCPUModel> getDcpuModels() {

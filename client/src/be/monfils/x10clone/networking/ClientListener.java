@@ -33,7 +33,6 @@ public class ClientListener implements MessageListener<Client> {
 			}
 		} else if(message instanceof MessageLoadScene) {
 			MessageLoadScene messageLoadScene = (MessageLoadScene) message;
-			this.client.setLoadingScene(true);
 			try {
 				this.client.loadScene(SceneDescriptor.loadJSON(messageLoadScene.getScene_json()));
 			} catch (IOException e) {
