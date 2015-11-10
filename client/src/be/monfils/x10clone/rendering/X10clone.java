@@ -5,6 +5,7 @@ import be.monfils.x10clone.constants.Constants;
 import be.monfils.x10clone.dcpu.DCPUModel;
 import be.monfils.x10clone.messages.*;
 import be.monfils.x10clone.networking.ClientListener;
+import be.monfils.x10clone.states.StateInGame;
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -33,7 +34,7 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 	private boolean connected;
 	private String username;
 
-	private Scene scene;
+	private StateInGame stateInGame;
 
 	public static void main(String args[]) {
 		AppSettings settings = new AppSettings(true);
@@ -53,7 +54,7 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 		setDisplayStatView(false);
 		setDisplayFps(false);
 
-		cam.setFrustumPerspective(90, (float) settings.getWidth() / (float) settings.getHeight(), 0.05f, 10000f);
+		cam.setFrustumPerspective(90, (float) cam.getWidth() / (float) cam.getHeight(), 0.05f, 10000f);
 
 		initKeys();
 
@@ -105,8 +106,8 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 		this.enqueue(new Callable<Object>() {
 			@Override
 			public Object call() throws Exception {
-				scene = new Scene(rootNode, guiNode, assetManager, inputManager, settings, sceneDescriptor, stateManager, listener, myClient, cam, flyCam, mouseInput);
-				scene.load();
+				stateInGame = new StateInGame(rootNode, guiNode, assetManager, inputManager, settings, sceneDescriptor, stateManager, listener, myClient, cam, flyCam, mouseInput);
+				stateManager.attach(stateInGame);
 
 				return null;
 			}
@@ -114,7 +115,8 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 	}
 
 	public void addDCPU(Vector3f position, Quaternion rotation, float scale, int id) {
-		scene.addDCPU(position, rotation, scale, id);
+		if(stateInGame != null && stateInGame.isEnabled() && stateInGame.isLoaded())
+			stateInGame.addDCPU(position, rotation, scale, id);
 	}
 
 	private void initKeys() {
@@ -135,36 +137,35 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 	private ActionListener actionListener = new ActionListener() {
 		@Override
 		public void onAction(String name, boolean pressed, float tpf) {
-			if(name.equals("focusDCPU"))
-				scene.input(Scene.Controls.FOCUS_DCPU, pressed, tpf);
-			else if(name.equals("resetDCPU"))
-				scene.input(Scene.Controls.RESET_DCPU, pressed, tpf);
-			else if(name.equals("ToggleFlyCam"))
-				scene.input(Scene.Controls.TOGGLE_FLY_CAM, pressed, tpf);
-			else if(name.equals("Jump"))
-				scene.input(Scene.Controls.JUMP, pressed, tpf);
-			else if(name.equals("Forwards"))
-				scene.input(Scene.Controls.FORWARDS, pressed, tpf);
-			else if(name.equals("Backwards"))
-				scene.input(Scene.Controls.BACKWARDS, pressed, tpf);
-			else if(name.equals("Left"))
-				scene.input(Scene.Controls.LEFT, pressed, tpf);
-			else if(name.equals("Right"))
-				scene.input(Scene.Controls.RIGHT, pressed, tpf);
+			if(stateInGame != null && stateInGame.isEnabled() && stateInGame.isLoaded()) {
+				if (name.equals("focusDCPU"))
+					stateInGame.input(StateInGame.Controls.FOCUS_DCPU, pressed, tpf);
+				else if (name.equals("resetDCPU"))
+					stateInGame.input(StateInGame.Controls.RESET_DCPU, pressed, tpf);
+				else if (name.equals("ToggleFlyCam"))
+					stateInGame.input(StateInGame.Controls.TOGGLE_FLY_CAM, pressed, tpf);
+				else if (name.equals("Jump"))
+					stateInGame.input(StateInGame.Controls.JUMP, pressed, tpf);
+				else if (name.equals("Forwards"))
+					stateInGame.input(StateInGame.Controls.FORWARDS, pressed, tpf);
+				else if (name.equals("Backwards"))
+					stateInGame.input(StateInGame.Controls.BACKWARDS, pressed, tpf);
+				else if (name.equals("Left"))
+					stateInGame.input(StateInGame.Controls.LEFT, pressed, tpf);
+				else if (name.equals("Right"))
+					stateInGame.input(StateInGame.Controls.RIGHT, pressed, tpf);
+			}
 		}
 	};
 
 	@Override
 	public void simpleUpdate(float tpf) {
-		if(scene != null && scene.isLoaded())
-			scene.update(tpf);
+
 	}
 
 	@Override
 	public void simpleRender(RenderManager rm) {
 		super.simpleRender(rm);
-		if(scene != null && scene.isLoaded())
-			scene.render();
 	}
 
 	@Override
@@ -200,25 +201,26 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 		enqueue(new Callable<Object>() {
 			@Override
 			public Object call() throws Exception {
-				scene.setPlayerPosition(id, position, rotation);
+				if(stateInGame != null && stateInGame.isEnabled() && stateInGame.isLoaded())
+					stateInGame.setPlayerPosition(id, position, rotation);
 				return null;
 			}
 		});
 	}
 
 	public boolean isLoadingScene() {
-		return scene == null || !scene.isLoaded();
+		return stateInGame == null || !stateInGame.isLoaded();
 	}
 
 	public LinkedList<DCPUModel> getDcpuModels() {
-		return scene.getDcpuModels();
+		return stateInGame.getDcpuModels();
 	}
 
 	public void addPlayer(int id, Vector3f position) {
-		scene.addPlayer(id, position);
+		stateInGame.addPlayer(id, position);
 	}
 
 	public void removePlayer(int id) {
-		scene.removePlayer(id);
+		stateInGame.removePlayer(id);
 	}
 }

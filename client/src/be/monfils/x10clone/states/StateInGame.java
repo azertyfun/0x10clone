@@ -1,4 +1,4 @@
-package be.monfils.x10clone.rendering;
+package be.monfils.x10clone.states;
 
 import be.monfils.x10clone.SceneDescriptor;
 import be.monfils.x10clone.dcpu.DCPUModel;
@@ -6,6 +6,8 @@ import be.monfils.x10clone.dcpu.HardwareTracker;
 import be.monfils.x10clone.messages.MessageDCPUKeyCode;
 import be.monfils.x10clone.messages.MessagePlayerLocation;
 import be.monfils.x10clone.messages.MessageResetDCPU;
+import com.jme3.app.Application;
+import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioNode;
@@ -24,6 +26,7 @@ import com.jme3.input.InputManager;
 import com.jme3.input.MouseInput;
 import com.jme3.input.RawInputListener;
 import com.jme3.input.event.*;
+import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.material.Material;
 import com.jme3.math.Quaternion;
@@ -31,6 +34,7 @@ import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Client;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
@@ -41,12 +45,13 @@ import java.util.LinkedList;
 import java.util.Random;
 
 /**
- * Created by nathan on 6/11/15.
+ * Created by nathan on 10/11/15.
  */
-public class Scene {
+public class StateInGame extends AbstractAppState {
 	private Random random = new Random();
 
-	private final Node rootNode;
+	private Node rootNode;
+
 	private final Listener listener;
 	private final AssetManager assetManager;
 	private final InputManager inputManager;
@@ -86,7 +91,9 @@ public class Scene {
 
 	private boolean loaded = false;
 
-	public Scene(Node rootNode, Node guiNode, AssetManager assetManager, InputManager inputManager, AppSettings appSettings, SceneDescriptor sceneDescriptor, AppStateManager appStateManager, Listener listener, Client myClient, Camera cam, FlyByCamera flyCam, MouseInput mouseInput) {
+	private StateFPSModel stateFPSModel;
+
+	public StateInGame(Node rootNode, Node guiNode, AssetManager assetManager, InputManager inputManager, AppSettings appSettings, SceneDescriptor sceneDescriptor, AppStateManager appStateManager, Listener listener, Client myClient, Camera cam, FlyByCamera flyCam, MouseInput mouseInput) {
 		this.rootNode = rootNode;
 		this.guiNode = guiNode;
 		this.assetManager = assetManager;
@@ -101,6 +108,11 @@ public class Scene {
 		this.mouseInput = mouseInput;
 
 		bulletAppState = new BulletAppState();
+	}
+
+	@Override
+	public void initialize(AppStateManager stateManager, Application app) {
+		super.initialize(stateManager, app);
 
 		player = new BetterCharacterControl(0.5f, 1.8f, 1);
 		player.setJumpForce(new Vector3f(0.0f, 5.0f, 0.0f));
@@ -116,9 +128,7 @@ public class Scene {
 			footSteps[i].setPositional(false);
 			footSteps[i].setLooping(false);
 		}
-	}
 
-	public void load() {
 		rootNode.detachAllChildren();
 		for(Light l : rootNode.getWorldLightList())
 			rootNode.removeLight(l);
@@ -191,12 +201,27 @@ public class Scene {
 
 		rootNode.attachChild(playerNode);
 
+		boolean found = false;
+		for(Light l : sceneDescriptor.getLights()) {
+			if(l instanceof DirectionalLight) {
+				stateManager.attach(stateFPSModel = new StateFPSModel(((DirectionalLight) l).getDirection()));
+				found = true;
+				break;
+			}
+		}
+		if(!found)
+			stateManager.attach(stateFPSModel = new StateFPSModel(new Vector3f(0.2f, -0.2f, 1.5f)));
+
+
 		loaded = true;
 
 		System.out.println("Scene loaded!");
 	}
 
+	@Override
 	public void update(float tpf) {
+		super.update(tpf);
+
 		camDir.set(cam.getDirection()).multLocal(6f);
 		camLeft.set(cam.getLeft()).multLocal(4f);
 		walkDirection.set(0, 0, 0);
@@ -231,9 +256,15 @@ public class Scene {
 		MessagePlayerLocation messagePlayerLocation = new MessagePlayerLocation(myClient.getId(), playerNode.getLocalTranslation(), rotation);
 		messagePlayerLocation.setReliable(false);
 		myClient.send(messagePlayerLocation);
+
+		stateFPSModel.updateLocation(cam.getLocation());
+		stateFPSModel.updateDirection(cam.getDirection());
 	}
 
-	public void render() {
+	@Override
+	public void render(RenderManager rm) {
+		super.render(rm);
+
 		for(DCPUModel m : dcpuModels)
 			m.render(assetManager);
 	}
@@ -278,9 +309,9 @@ public class Scene {
 		}
 	}
 
-	public void input(int input, boolean pressed, float tpf) {
+	public void input(Controls input, boolean pressed, float tpf) {
 		switch (input) {
-			case Controls.FOCUS_DCPU:
+			case FOCUS_DCPU:
 				if (!focusedOnDCPU && !pressed) {
 					CollisionResults results = new CollisionResults();
 					Ray ray = new Ray(cam.getLocation(), cam.getDirection());
@@ -300,7 +331,7 @@ public class Scene {
 					focusedOnDCPU = false;
 				}
 				break;
-			case Controls.RESET_DCPU:
+			case RESET_DCPU:
 				if(!pressed) {
 					if (focusedDCPU.getUserData("id") == null)
 						return;
@@ -309,7 +340,7 @@ public class Scene {
 					myClient.send(new MessageResetDCPU(id));
 				}
 				break;
-			case Controls.TOGGLE_FLY_CAM:
+			case TOGGLE_FLY_CAM:
 				if(!focusedOnDCPU) {
 					if (!pressed) //on release
 						flyCam.setEnabled(!flyCam.isEnabled());
@@ -320,23 +351,23 @@ public class Scene {
 						mouseInput.setCursorVisible(true);
 				}
 				break;
-			case Controls.JUMP:
+			case JUMP:
 				if(!focusedOnDCPU)
 					player.jump();
 				break;
-			case Controls.FORWARDS:
+			case FORWARDS:
 				if(!focusedOnDCPU)
 					forwards = pressed;
 				break;
-			case Controls.BACKWARDS:
+			case BACKWARDS:
 				if(!focusedOnDCPU)
 					backwards = pressed;
 				break;
-			case Controls.LEFT:
+			case LEFT:
 				if(!focusedOnDCPU)
 					left = pressed;
 				break;
-			case Controls.RIGHT:
+			case RIGHT:
 				if(!focusedOnDCPU)
 					right = pressed;
 				break;
@@ -351,14 +382,14 @@ public class Scene {
 		return loaded;
 	}
 
-	public class Controls {
-		public static final int FOCUS_DCPU = 0;
-		public static final int RESET_DCPU = 1;
-		public static final int TOGGLE_FLY_CAM = 2;
-		public static final int JUMP = 3;
-		public static final int FORWARDS = 4;
-		public static final int BACKWARDS = 5;
-		public static final int LEFT = 6;
-		public static final int RIGHT = 7;
+	public enum Controls {
+		FOCUS_DCPU,
+		RESET_DCPU,
+		TOGGLE_FLY_CAM,
+		JUMP,
+		FORWARDS,
+		BACKWARDS,
+		LEFT,
+		RIGHT;
 	}
 }
