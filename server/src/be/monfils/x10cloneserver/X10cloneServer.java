@@ -68,11 +68,13 @@ public class X10cloneServer extends SimpleApplication implements ConnectionListe
 			Serializer.registerClass(MessageDCPUKeyCode.class);
 			Serializer.registerClass(MessageResetDCPU.class);
 			Serializer.registerClass(MessageSpawnPlayer.class);
+			Serializer.registerClass(MessageShootBullet.class);
 
 			myServer.addMessageListener(new ServerListener(this), MessageChangeUsername.class);
 			myServer.addMessageListener(new ServerListener(this), MessagePlayerLocation.class);
 			myServer.addMessageListener(new ServerListener(this), MessageDCPUKeyCode.class);
 			myServer.addMessageListener(new ServerListener(this), MessageResetDCPU.class);
+			myServer.addMessageListener(new ServerListener(this), MessageShootBullet.class);
 
 			myServer.addConnectionListener(this);
 

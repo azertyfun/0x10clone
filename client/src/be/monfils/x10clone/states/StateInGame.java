@@ -1,11 +1,13 @@
 package be.monfils.x10clone.states;
 
+import be.monfils.x10clone.Bullet;
 import be.monfils.x10clone.SceneDescriptor;
 import be.monfils.x10clone.dcpu.DCPUModel;
 import be.monfils.x10clone.dcpu.HardwareTracker;
 import be.monfils.x10clone.messages.MessageDCPUKeyCode;
 import be.monfils.x10clone.messages.MessagePlayerLocation;
 import be.monfils.x10clone.messages.MessageResetDCPU;
+import be.monfils.x10clone.messages.MessageShootBullet;
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
@@ -29,14 +31,18 @@ import com.jme3.input.event.*;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.Light;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Client;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Cylinder;
 import com.jme3.system.AppSettings;
 import com.jme3.ui.Picture;
 import com.jme3.util.SkyFactory;
@@ -371,6 +377,12 @@ public class StateInGame extends AbstractAppState {
 				if(!focusedOnDCPU)
 					right = pressed;
 				break;
+			case SHOOT:
+				if(!focusedOnDCPU && pressed) {
+					myClient.send(new MessageShootBullet(cam.getDirection()));
+					appStateManager.attach(new Bullet(rootNode, cam.getLocation(), cam.getDirection(), cam.getRotation(), ColorRGBA.Green, bulletAppState));
+				}
+				break;
 		}
 	}
 
@@ -390,6 +402,7 @@ public class StateInGame extends AbstractAppState {
 		FORWARDS,
 		BACKWARDS,
 		LEFT,
-		RIGHT;
+		RIGHT,
+		SHOOT;
 	}
 }

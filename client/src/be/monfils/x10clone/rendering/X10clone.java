@@ -8,8 +8,10 @@ import be.monfils.x10clone.networking.ClientListener;
 import be.monfils.x10clone.states.StateInGame;
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Client;
@@ -80,6 +82,7 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 			Serializer.registerClass(MessageDCPUKeyCode.class);
 			Serializer.registerClass(MessageResetDCPU.class);
 			Serializer.registerClass(MessageSpawnPlayer.class);
+			Serializer.registerClass(MessageShootBullet.class);
 
 			myClient.addMessageListener(new ClientListener(this), MessageChangeUsername.class);
 			myClient.addMessageListener(new ClientListener(this), MessageLoadScene.class);
@@ -128,9 +131,10 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 		inputManager.addMapping("ToggleFlyCam", new KeyTrigger(KeyInput.KEY_RETURN), new KeyTrigger(KeyInput.KEY_NUMPADENTER));
 		inputManager.addMapping("focusDCPU", new KeyTrigger(KeyInput.KEY_TAB));
 		inputManager.addMapping("resetDCPU", new KeyTrigger(KeyInput.KEY_END));
+		inputManager.addMapping("shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
 		inputManager.addListener(actionListener, "Forwards", "Backwards", "Left", "Right");
-		inputManager.addListener(actionListener, "ToggleFlyCam", "focusDCPU", "resetDCPU", "Jump");
+		inputManager.addListener(actionListener, "ToggleFlyCam", "focusDCPU", "resetDCPU", "Jump", "shoot");
 		flyCam.unregisterInput();
 	}
 
@@ -154,6 +158,8 @@ public class X10clone extends SimpleApplication implements ClientStateListener {
 					stateInGame.input(StateInGame.Controls.LEFT, pressed, tpf);
 				else if (name.equals("Right"))
 					stateInGame.input(StateInGame.Controls.RIGHT, pressed, tpf);
+				else if (name.equals("shoot"))
+					stateInGame.input(StateInGame.Controls.SHOOT, pressed, tpf);
 			}
 		}
 	};
